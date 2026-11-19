@@ -996,6 +996,79 @@ const AI_PROVIDERS = [
   { id: 'custom',    label: 'Custom',    defaultModel: '',                                    keyLabel: 'API Key', keyPlaceholder: 'API key (optional)' },
 ] as const
 
+function formatTokens(n: number) {
+  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n)
+}
+
+type UsageTotals = { requests: number; failedRequests: number; totalTokens: number }
+type UsageDaily = UsageTotals & { date: string; provider: string; model: string }
+
+function AIUsageStats() {
+  const [data, setData] = useState<{ today: UsageTotals; allTime: UsageTotals; daily: UsageDaily[] } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    setLoading(true); setError(null)
+    try {
+      const r = await fetch('/api/ai/usage?limit=1')
+      if (!r.ok) throw new Error()
+      const d = await r.json()
+      setData({ today: d.totals.today, allTime: d.totals.allTime, daily: d.daily ?? [] })
+    } catch { setError('Failed to load usage') }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  return (
+    <div className="rounded-xl bg-surface-900 border border-surface-800 p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-semibold text-white">Token Usage Stats</p>
+          <p className="text-2xs text-surface-500 mt-0.5">AI Copilot and remediation-plan usage recorded by this server (UTC days)</p>
+        </div>
+        <button onClick={load} disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-700 border border-surface-700 rounded-xl text-xs text-surface-300 hover:text-white disabled:opacity-50 transition-all">
+          <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
+          Refresh
+        </button>
+      </div>
+      {error && <p className="text-xs text-danger">{error}</p>}
+      {data && <>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Requests today', value: String(data.today.requests) },
+            { label: 'Tokens today',   value: formatTokens(data.today.totalTokens) },
+            { label: 'All-time tokens', value: formatTokens(data.allTime.totalTokens) },
+          ].map(s => (
+            <div key={s.label} className="rounded-lg bg-surface-950 border border-surface-800 px-3 py-2">
+              <p className="text-lg font-semibold text-white font-mono">{s.value}</p>
+              <p className="text-2xs text-surface-500">{s.label}</p>
+            </div>
+          ))}
+        </div>
+        <div>
+          <p className="text-2xs font-semibold text-surface-400 uppercase tracking-wider mb-1.5">Last 7 days</p>
+          {data.daily.length === 0
+            ? <p className="text-2xs text-surface-500">No AI usage recorded in the last 7 days.</p>
+            : <div className="space-y-1">
+                {data.daily.map(d => (
+                  <div key={`${d.date}-${d.provider}-${d.model}`} className="flex items-center justify-between gap-3 text-xs">
+                    <span className="font-mono text-surface-400 shrink-0">{d.date}</span>
+                    <span className="font-mono text-surface-200 truncate flex-1" title={`${d.provider} · ${d.model}`}>{d.model}</span>
+                    <span className="font-mono text-surface-400 shrink-0">
+                      {d.requests} req{d.failedRequests ? ` (${d.failedRequests} failed)` : ''} · {formatTokens(d.totalTokens)} tok
+                    </span>
+                  </div>
+                ))}
+              </div>}
+        </div>
+      </>}
+    </div>
+  )
+}
+
 function AIProviderTab() {
   const [provider, setProvider] = useState('groq')
   const [apiKey,   setApiKey]   = useState('')
@@ -1161,6 +1234,8 @@ function AIProviderTab() {
           <p className={cn('text-xs mt-3 font-mono', testRes.ok ? 'text-success' : 'text-danger')}>{testRes.msg}</p>
         )}
       </div>
+
+      <AIUsageStats />
 
       {/* FinOps rates */}
       <div className="border-t border-surface-800 pt-6 space-y-4">

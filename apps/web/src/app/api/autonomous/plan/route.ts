@@ -13,7 +13,7 @@
 import { generateText }                                  from 'ai'
 import { createOpenAI }                                  from '@ai-sdk/openai'
 import { createGoogleGenerativeAI }                      from '@ai-sdk/google'
-import { createAnthropic }                                from '@ai-sdk/anthropic'
+import { createAnthropicModel }                          from '@/lib/anthropic'
 import { NextResponse }                                  from 'next/server'
 import { readConfig }                                    from '@/app/api/settings/config/shared'
 import { manualStore, buildAutoIncidents }               from '@/app/api/incidents/shared'
@@ -53,7 +53,7 @@ function getPlanModel(): { model: any; provider: string; modelName: string } | n
 
   if (!apiKey) return null
   if (provider === 'google') return { model: createGoogleGenerativeAI({ apiKey })(model), provider, modelName: model }
-  if (provider === 'anthropic') return { model: createAnthropic({ apiKey })(model), provider, modelName: model }
+  if (provider === 'anthropic') return { model: createAnthropicModel(apiKey, model), provider, modelName: model }
 
   return {
     model: createOpenAI({
@@ -121,7 +121,7 @@ Rules:
     const result = await generateText({
       model: selectedModel.model,
       prompt,
-      temperature: 0.2,
+      ...(selectedModel.provider === 'anthropic' ? {} : { temperature: 0.2 }),
       maxTokens: 800,
       abortSignal: AbortSignal.timeout(20_000),
     })

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { auth } from '@/lib/auth'
-import { summarizeAIUsage, summarizeAIUsageBySource } from '@/lib/ai-usage'
+import { summarizeAIUsage, summarizeAIUsageByDayModel, summarizeAIUsageBySource } from '@/lib/ai-usage'
 
 const USAGE_FILE = join(process.cwd(), 'data', 'ai-usage.jsonl')
 
@@ -38,5 +38,5 @@ export async function GET(req: Request) {
     },
   }
 
-  return NextResponse.json({ entries, totals })
+  return NextResponse.json({ entries, totals, daily: summarizeAIUsageByDayModel(allEntries) })
 }

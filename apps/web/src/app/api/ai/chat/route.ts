@@ -3,13 +3,14 @@ const RETIRED_GROQ_MODELS = new Set(['llama-3.3-70b-versatile', 'llama-3.1-8b-in
 import { streamText, tool } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { createAnthropic } from '@ai-sdk/anthropic'
+import { createAnthropicModel } from '@/lib/anthropic'
 import { z } from 'zod'
 import { mkdirSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { auth } from '@/lib/auth'
 import { createRateLimiter } from '@/lib/rate-limit'
 import { getAIUsageFailure, recordAIUsage } from '@/lib/ai-usage'
+import { INTERNAL_BASE } from '@/lib/internal'
 import { resolveK8sUrl, resolvePromUrl, resolveAlertmanagerUrl, resolveClusterMeta, K8S_TIMEOUT_MS } from '@/lib/cluster'
 
 const DATA_DIR    = join(process.cwd(), 'data')
@@ -18,8 +19,6 @@ if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
 // 20 requests per 60 s per user
 const checkRateLimit = createRateLimiter(20, 60_000)
-
-const BASE = (process.env.NEXTAUTH_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
 function getAIErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
@@ -67,9 +66,9 @@ async function promQueryAll(q: string): Promise<{ metric: Record<string, string>
   return (j?.data?.result ?? []).map((x: any) => ({ metric: x.metric, value: parseFloat(x.value[1]) }))
 }
 
-async function apiGet(path: string) {
+async function apiGet(path: string, headers: Headers) {
   try {
-    const r = await fetch(`${BASE}${path}`, { signal: AbortSignal.timeout(K8S_TIMEOUT_MS), cache: 'no-store' })
+    const r = await fetch(`${INTERNAL_BASE}${path}`, { headers, signal: AbortSignal.timeout(K8S_TIMEOUT_MS), cache: 'no-store' })
     if (!r.ok) return null
     return r.json()
   } catch { return null }
@@ -95,7 +94,7 @@ function getModel(used?: { provider: string; model: string }): any {
   if (provider === 'groq' && RETIRED_GROQ_MODELS.has(model)) model = GROQ_DEFAULT_MODEL
   if (used) { used.provider = provider; used.model = model }
   if (provider === 'google') return createGoogleGenerativeAI({ apiKey })(model)
-  if (provider === 'anthropic') return createAnthropic({ apiKey })(model)
+  if (provider === 'anthropic') return createAnthropicModel(apiKey, model)
   const openai = createOpenAI({ apiKey, baseURL: baseUrl || (provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined) })
   return openai(model, { parallelToolCalls: false })
 }
@@ -120,7 +119,13 @@ RESPONSE: Concise, SRE-audience. **bold** severity, \`code\` for resources/comma
 }
 
 // ── Tools ─────────────────────────────────────────────────────
-const tools = {
+function createTools(requestHeaders: Headers) {
+  const apiHeaders = new Headers()
+  for (const name of ['cookie', 'x-k8s-url', 'x-prom-url', 'x-alertmanager-url']) {
+    const value = requestHeaders.get(name)
+    if (value) apiHeaders.set(name, value)
+  }
+  return {
 
   get_cluster_health: tool({
     description: 'Real-time cluster health: nodes, CPU%, memory%, pod counts, health score. Call first for any diagnostic question.',
@@ -247,7 +252,7 @@ const tools = {
       state:    z.enum(['open', 'investigating', 'resolved', 'all']).describe('Incident state. Use all for every state.'),
     }),
     execute: async ({ severity, state }) => {
-      const data = await apiGet('/api/incidents')
+      const data = await apiGet('/api/incidents', apiHeaders)
       if (!data) return { source: 'unavailable', incidents: [] }
 
       let list = data.incidents ?? []
@@ -419,8 +424,8 @@ const tools = {
     execute: async ({ namespace, pod, windowMinutes }) => {
       try {
         const r = await fetch(
-          `${BASE}/api/k8s/correlate?namespace=${encodeURIComponent(namespace)}&pod=${encodeURIComponent(pod)}&window=${windowMinutes * 60}`,
-          { signal: AbortSignal.timeout(12000) },
+          `${INTERNAL_BASE}/api/k8s/correlate?namespace=${encodeURIComponent(namespace)}&pod=${encodeURIComponent(pod)}&window=${windowMinutes * 60}`,
+          { headers: apiHeaders, cache: 'no-store', signal: AbortSignal.timeout(12000) },
         )
         if (!r.ok) return { error: `Correlation API returned ${r.status}` }
         return { source: 'live', ...(await r.json()) }
@@ -914,6 +919,8 @@ const tools = {
   }),
 }
 
+}
+
 // ── Route handler ─────────────────────────────────────────────
 export async function POST(req: Request) {
   // ── Auth ─────────────────────────────────────────────────────────────────
@@ -950,6 +957,7 @@ export async function POST(req: Request) {
   }
   try {
     const { messages } = await req.json() as { messages: unknown[] }
+    const tools = createTools(req.headers)
 
     // 1. Limit history to last 12 messages — supports 4-step tool chains (each step = 2 messages)
     const trimmedMessages = (messages as any[]).slice(-12) as Parameters<typeof streamText>[0]['messages']
@@ -1000,7 +1008,8 @@ export async function POST(req: Request) {
       model: getModel(used) as any,
       system: systemPrompt,
       messages: trimmedMessages,
-      tools: safeTools, maxSteps: 5, maxRetries: 0, temperature: 0.1, maxTokens: 1500,
+      tools: safeTools, maxSteps: 5, maxRetries: 0, maxTokens: 1500,
+      ...(used.provider === 'anthropic' ? {} : { temperature: 0.1 }),
       onStepFinish: ({ usage }) => {
         recordAIUsage({
           source: 'copilot',

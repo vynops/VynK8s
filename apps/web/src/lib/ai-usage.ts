@@ -132,6 +132,28 @@ export function summarizeAIUsageBySource(entries: readonly Record<string, any>[]
   }
 }
 
+export interface AIUsageDailyModel extends AIUsageSummary {
+  date: string
+  provider: string
+  model: string
+}
+
+/** Per UTC day and provider/model totals for the last `days` days, newest first. */
+export function summarizeAIUsageByDayModel(entries: readonly Record<string, any>[], days = 7, now = new Date()): AIUsageDailyModel[] {
+  const since = new Date(now.getTime() - (days - 1) * 86_400_000).toISOString().slice(0, 10)
+  const groups = new Map<string, Record<string, any>[]>()
+  for (const entry of entries) {
+    const date = typeof entry.ts === 'string' ? entry.ts.slice(0, 10) : ''
+    if (!date || date < since) continue
+    const key = JSON.stringify([date, entry.provider ?? 'unknown', entry.model ?? 'unknown'])
+    groups.set(key, [...(groups.get(key) ?? []), entry])
+  }
+  return [...groups].map(([key, group]) => {
+    const [date, provider, model] = JSON.parse(key) as [string, string, string]
+    return { date, provider, model, ...summarizeAIUsage(group) }
+  }).sort((a, b) => b.date.localeCompare(a.date) || b.totalTokens - a.totalTokens)
+}
+
 export function recordAIUsage(event: AIUsageEvent): void {
   try {
     if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })

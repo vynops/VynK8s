@@ -2248,9 +2248,39 @@ function AuditLogTab() {
 }
 
 // -- About tab -------------------------------------------------------------
+type ReleaseInfo = {
+  installed: { commit: string | null; date: string | null; dirty: boolean | null; source: string | null }
+  update: {
+    status: 'unavailable' | 'unknown' | 'current' | 'available'
+    message?: string
+    release?: { tag_name: string; name: string | null; published_at: string | null }
+    files?: { filename: string; status: string; previous_filename?: string }[]
+  }
+}
+
 function AboutTab() {
   const [probe, setProbe] = useState<ProbeData | null>(null)
+  const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null)
+  const [releaseError, setReleaseError] = useState<string | null>(null)
+  const [checkingRelease, setCheckingRelease] = useState(false)
   const activeCluster = useDashboardStore(s => s.activeCluster)
+
+  const loadRelease = useCallback(async () => {
+    setCheckingRelease(true)
+    setReleaseError(null)
+    try {
+      const response = await fetch('/api/settings/release', { cache: 'no-store' })
+      if (!response.ok) throw new Error(`Update check failed (HTTP ${response.status})`)
+      setReleaseInfo(await response.json())
+    } catch (error) {
+      setReleaseInfo(null)
+      setReleaseError(error instanceof Error ? error.message : 'Unable to check for updates')
+    } finally {
+      setCheckingRelease(false)
+    }
+  }, [])
+
+  useEffect(() => { void loadRelease() }, [loadRelease])
 
   useEffect(() => {
     fetch('/api/settings/probe', { cache: 'no-store', headers: getClusterHeaders() }).then(r => r.json()).then(setProbe).catch(() => {})
@@ -2286,7 +2316,8 @@ function AboutTab() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: 'Version',     value: '26.11.01' },
+            { label: 'Installed commit', value: releaseInfo?.installed.commit?.slice(0, 12) ?? 'Unavailable' },
+            { label: 'Commit date', value: releaseInfo?.installed.date ? new Date(releaseInfo.installed.date).toLocaleDateString() : 'Unavailable' },
             { label: 'Framework',   value: 'Next.js 15 App Router' },
             { label: 'Runtime',     value: 'Node.js 20' },
             { label: 'License',     value: 'Private' },
@@ -2297,6 +2328,44 @@ function AboutTab() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="rounded-2xl bg-surface-900 border border-surface-800 p-5 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-white">Updates</p>
+          <button onClick={() => void loadRelease()} disabled={checkingRelease}
+            className="px-3 py-1.5 rounded-lg bg-surface-800 text-xs text-surface-300 disabled:opacity-40">
+            {checkingRelease ? 'Checking...' : 'Check for updates'}
+          </button>
+        </div>
+        {releaseError && <p className="text-xs text-red-400">{releaseError}</p>}
+        {releaseInfo?.installed.dirty && (
+          <p className="text-xs text-amber-400">The build included tracked local changes; the commit alone does not describe the installed code.</p>
+        )}
+        {releaseInfo?.installed.source === 'manifest' && (
+          <p className="text-xs text-amber-400">Version is from release metadata; local file modifications cannot be verified.</p>
+        )}
+        {releaseInfo && (
+          <>
+            <p className="text-xs text-surface-300">
+              {releaseInfo.update.status === 'available' ? 'Update available' :
+                releaseInfo.update.status === 'current' ? 'Recorded commit matches the latest release' :
+                  releaseInfo.update.message}
+              {releaseInfo.update.release && `: ${releaseInfo.update.release.name || releaseInfo.update.release.tag_name}`}
+            </p>
+            {releaseInfo.update.files && releaseInfo.update.files.length > 0 && (
+              <details className="text-xs text-surface-300">
+                <summary className="cursor-pointer">Changed files ({releaseInfo.update.files.length})</summary>
+                <ul className="mt-2 space-y-1 break-all">
+                  {releaseInfo.update.files.map(file => (
+                    <li key={file.filename}>{file.status}: {file.previous_filename ? `${file.previous_filename} → ` : ''}{file.filename}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            <p className="text-xs text-surface-500">Update installation is not enabled. Client data and configuration are not changed by this check.</p>
+          </>
+        )}
       </div>
 
       {/* Cluster info */}

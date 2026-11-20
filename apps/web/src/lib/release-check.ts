@@ -1,13 +1,16 @@
 import { z } from 'zod'
+import { maintenanceReasons } from './update-policy.js'
 
 const API = 'https://api.github.com/repos/vynops/VynOps'
 const releaseSchema = z.object({
   tag_name: z.string().min(1),
   name: z.string().nullable(),
   published_at: z.string().nullable(),
+  body: z.string().nullable().optional(),
 })
 const comparisonSchema = z.object({
   status: z.enum(['ahead', 'behind', 'identical', 'diverged']),
+  head_commit: z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/i) }).optional(),
   files: z.array(z.object({
     filename: z.string(),
     status: z.string(),
@@ -42,9 +45,12 @@ export async function checkRelease(commit: string | null) {
   if (comparison.files.length >= 300) {
     return { status: 'unknown' as const, release, message: 'The release has too many changes to display a complete file list.' }
   }
+  const maintenance = maintenanceReasons(release.body, comparison.files)
   return {
     status: comparison.status === 'identical' ? 'current' as const : 'available' as const,
     release,
     files: comparison.files,
+    maintenance,
+    targetCommit: comparison.head_commit?.sha ?? null,
   }
 }

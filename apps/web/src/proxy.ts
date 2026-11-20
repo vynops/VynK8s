@@ -5,6 +5,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
   const { pathname } = req.nextUrl
 
+  if (pathname === '/api/settings/release/health') return
   if (isInternalPath(pathname) && hasInternalSecret(req.headers)) return
 
   const isBlocked = (req.auth?.user as { blocked?: boolean } | undefined)?.blocked === true

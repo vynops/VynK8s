@@ -2255,7 +2255,34 @@ type ReleaseInfo = {
     message?: string
     release?: { tag_name: string; name: string | null; published_at: string | null }
     files?: { filename: string; status: string; previous_filename?: string }[]
+    maintenance?: string[]
+    targetCommit?: string | null
   }
+}
+type UpdateStatus = {
+  id: string
+  tag: string
+  commit: string
+  phase: 'queued' | 'checking' | 'stopping' | 'backing-up' | 'replacing-files' | 'building' | 'starting' |
+    'rolling-back' | 'completed' | 'rolled-back' | 'failed' | 'manual-recovery-required'
+  updatedAt?: string
+}
+const activeUpdatePhases: UpdateStatus['phase'][] = [
+  'queued', 'checking', 'stopping', 'backing-up', 'replacing-files', 'building', 'starting', 'rolling-back',
+]
+const updatePhaseLabels: Record<UpdateStatus['phase'], string> = {
+  queued: 'Waiting to start',
+  checking: 'Checking release and files',
+  stopping: 'Stopping the application',
+  'backing-up': 'Backing up the previous build',
+  'replacing-files': 'Replacing changed files',
+  building: 'Building the application',
+  starting: 'Starting and checking the application',
+  'rolling-back': 'Restoring the previous version',
+  completed: 'Update completed',
+  'rolled-back': 'Update failed; the previous version was restored',
+  failed: 'Update checks failed; no files were changed',
+  'manual-recovery-required': 'Manual recovery is required; contact your administrator',
 }
 
 function AboutTab() {
@@ -2263,11 +2290,35 @@ function AboutTab() {
   const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null)
   const [releaseError, setReleaseError] = useState<string | null>(null)
   const [checkingRelease, setCheckingRelease] = useState(false)
+  const [verifyingRelease, setVerifyingRelease] = useState(false)
+  const [verifiedFiles, setVerifiedFiles] = useState<{ name: string; action: 'add' | 'remove' | 'replace' }[] | null>(null)
+  const [installEnabled, setInstallEnabled] = useState(false)
+  const [installing, setInstalling] = useState(false)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
+  const { data: session } = useSession()
+  const isSuperAdmin = (session?.user as { isSuperAdmin?: boolean } | undefined)?.isSuperAdmin === true
   const activeCluster = useDashboardStore(s => s.activeCluster)
+  const updateActive = Boolean(updateStatus && activeUpdatePhases.includes(updateStatus.phase))
+
+  const loadUpdateStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/settings/release/install', { cache: 'no-store' })
+      if (!response.ok) throw new Error(`Status unavailable (HTTP ${response.status})`)
+      const result = await response.json()
+      setInstallEnabled(result.enabled === true)
+      setUpdateStatus(result.status)
+      setStatusError(null)
+    } catch (error) {
+      setInstallEnabled(false)
+      setStatusError(error instanceof Error ? error.message : 'Update status unavailable')
+    }
+  }, [])
 
   const loadRelease = useCallback(async () => {
     setCheckingRelease(true)
     setReleaseError(null)
+    setVerifiedFiles(null)
     try {
       const response = await fetch('/api/settings/release', { cache: 'no-store' })
       if (!response.ok) throw new Error(`Update check failed (HTTP ${response.status})`)
@@ -2280,7 +2331,64 @@ function AboutTab() {
     }
   }, [])
 
+  const verifyRelease = async () => {
+    const release = releaseInfo?.update.release
+    const commit = releaseInfo?.update.targetCommit
+    if (!release || !commit) return
+    setVerifyingRelease(true)
+    setReleaseError(null)
+    setVerifiedFiles(null)
+    try {
+      const response = await fetch('/api/settings/release/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag: release.tag_name, commit }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || `Verification failed (HTTP ${response.status})`)
+      setVerifiedFiles(result.files)
+    } catch (error) {
+      setReleaseError(error instanceof Error ? error.message : 'Unable to verify update')
+    } finally {
+      setVerifyingRelease(false)
+    }
+  }
+
+  const installRelease = async () => {
+    const release = releaseInfo?.update.release
+    const commit = releaseInfo?.update.targetCommit
+    if (!release || !commit || !verifiedFiles) return
+    if (!window.confirm(`Install ${release.tag_name} (${commit.slice(0, 12)})? The application will restart and may be unavailable during the update.`)) return
+    setInstalling(true)
+    setReleaseError(null)
+    try {
+      const response = await fetch('/api/settings/release/install', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag: release.tag_name, commit }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || `Installation could not be started (HTTP ${response.status})`)
+      setUpdateStatus(result.status)
+      setVerifiedFiles(null)
+    } catch (error) {
+      setReleaseError(error instanceof Error ? error.message : 'Installation startup could not be confirmed; check status before retrying.')
+    } finally {
+      setInstalling(false)
+      void loadUpdateStatus()
+    }
+  }
+
   useEffect(() => { void loadRelease() }, [loadRelease])
+  useEffect(() => {
+    if (updateStatus?.phase === 'completed') void loadRelease()
+  }, [updateStatus?.id, updateStatus?.phase, loadRelease])
+  useEffect(() => {
+    if (!isSuperAdmin) return
+    void loadUpdateStatus()
+    const timer = setInterval(() => void loadUpdateStatus(), 5000)
+    return () => clearInterval(timer)
+  }, [isSuperAdmin, loadUpdateStatus])
 
   useEffect(() => {
     fetch('/api/settings/probe', { cache: 'no-store', headers: getClusterHeaders() }).then(r => r.json()).then(setProbe).catch(() => {})
@@ -2333,7 +2441,7 @@ function AboutTab() {
       <div className="rounded-2xl bg-surface-900 border border-surface-800 p-5 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-white">Updates</p>
-          <button onClick={() => void loadRelease()} disabled={checkingRelease}
+          <button onClick={() => void loadRelease()} disabled={checkingRelease || verifyingRelease || installing || updateActive}
             className="px-3 py-1.5 rounded-lg bg-surface-800 text-xs text-surface-300 disabled:opacity-40">
             {checkingRelease ? 'Checking...' : 'Check for updates'}
           </button>
@@ -2353,6 +2461,11 @@ function AboutTab() {
                   releaseInfo.update.message}
               {releaseInfo.update.release && `: ${releaseInfo.update.release.name || releaseInfo.update.release.tag_name}`}
             </p>
+            {releaseInfo.update.status === 'available' && releaseInfo.update.maintenance && releaseInfo.update.maintenance.length > 0 && (
+              <ul className="text-xs text-amber-400 space-y-1">
+                {releaseInfo.update.maintenance.map(reason => <li key={reason}>{reason}</li>)}
+              </ul>
+            )}
             {releaseInfo.update.files && releaseInfo.update.files.length > 0 && (
               <details className="text-xs text-surface-300">
                 <summary className="cursor-pointer">Changed files ({releaseInfo.update.files.length})</summary>
@@ -2363,7 +2476,45 @@ function AboutTab() {
                 </ul>
               </details>
             )}
-            <p className="text-xs text-surface-500">Update installation is not enabled. Client data and configuration are not changed by this check.</p>
+            {isSuperAdmin && releaseInfo.update.status === 'available' &&
+              releaseInfo.installed.source === 'manifest' && releaseInfo.update.targetCommit &&
+              releaseInfo.update.maintenance?.length === 0 && (
+                <button onClick={() => void verifyRelease()} disabled={verifyingRelease || checkingRelease || installing || updateActive}
+                  className="px-3 py-1.5 rounded-lg bg-surface-800 text-xs text-surface-300 disabled:opacity-40">
+                  {verifyingRelease ? 'Verifying...' : 'Verify update files'}
+                </button>
+              )}
+            {verifiedFiles && (
+              <details className="text-xs text-green-400" open>
+                <summary>Verification passed. No files have been changed.</summary>
+                <ul className="mt-2 space-y-1 break-all">
+                  {verifiedFiles.map(file => <li key={file.name}>{file.action}: {file.name}</li>)}
+                </ul>
+              </details>
+            )}
+            {isSuperAdmin && statusError && <p className="text-xs text-amber-400">{statusError}. The app may be restarting; status will be retried.</p>}
+            {isSuperAdmin && updateStatus && (
+              <p className="text-xs text-surface-300">
+                {updatePhaseLabels[updateStatus.phase] || 'Unknown update status'}: {updateStatus.tag}
+                {updateStatus.updatedAt && ` (${new Date(updateStatus.updatedAt).toLocaleString()})`}
+              </p>
+            )}
+            {isSuperAdmin && updateStatus?.phase === 'queued' && updateStatus.updatedAt &&
+              Date.now() - new Date(updateStatus.updatedAt).getTime() > 120000 && (
+                <p className="text-xs text-amber-400">The worker has not reported progress. Contact your administrator before retrying.</p>
+              )}
+            {isSuperAdmin && verifiedFiles && installEnabled && (
+              <button onClick={() => void installRelease()}
+                disabled={installing || updateActive || updateStatus?.phase === 'manual-recovery-required'}
+                className="px-3 py-1.5 rounded-lg bg-brand-500 text-xs text-white disabled:opacity-40">
+                {installing ? 'Starting...' : 'Approve and install'}
+              </button>
+            )}
+            <p className="text-xs text-surface-500">
+              {!isSuperAdmin ? 'Only a super-admin can approve installation. Checking is read-only.' :
+                installEnabled ? 'Checking does not change client data or configuration.' :
+                  'Update installation is not enabled. Client data and configuration are not changed by this check.'}
+            </p>
           </>
         )}
       </div>

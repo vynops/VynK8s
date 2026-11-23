@@ -10,6 +10,20 @@ import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
 import { WebSocketServer, WebSocket as WS } from 'ws'
+import { spawnSync } from 'node:child_process'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const WEB_DIR = dirname(fileURLToPath(import.meta.url))
+for (const setupScript of ['setup-env.mjs', 'ensure-first-admin.mjs']) {
+  const result = spawnSync(process.execPath, [join(WEB_DIR, 'scripts', setupScript)], {
+    cwd: WEB_DIR,
+    env: process.env,
+    stdio: 'inherit',
+  })
+  if (result.error) throw result.error
+  if (result.status !== 0) throw new Error(`${setupScript} failed during startup`)
+}
 
 process.on('uncaughtException', (err) => {
   console.error('[server] uncaughtException:', err.message, err.stack)
@@ -158,6 +172,34 @@ app.prepare().then(() => {
 
     setTimeout(runAutonomousLoop, 60_000)        // first run: 1 min after boot
     setInterval(runAutonomousLoop, LOOP_MS)       // then every 5 min
+
+    // ── AI remediation plan generation ────────────────────────────────────────
+    // Generates plans for open critical/high/medium incidents that don't already
+    // have one. The route itself no-ops when auto_plan_enabled is off, and skips
+    // incidents that already have an active plan, so this is safe to call
+    // unconditionally on a schedule (no extra LLM cost for incidents already covered).
+    const PLAN_LOOP_MS = 15 * 60 * 1000
+
+    const runPlanLoop = () => {
+      fetch(`${loopBase}/api/autonomous/plan`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${CRON_SECRET}`,
+        },
+        signal: AbortSignal.timeout(120_000),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d.skipped) return // AI plan generation disabled — silent
+          if (d.ok === false) return console.error(`[cron] plan generation failed: ${d.error ?? 'unknown'}`)
+          console.log(`[cron] plan generation — checked:${d.checked ?? 0} generated:${d.generated ?? 0} notices:${d.planNotices ?? 0}`)
+        })
+        .catch(e => console.error('[cron] plan generation error:', e.message))
+    }
+
+    setTimeout(runPlanLoop, 90_000)               // first run: 90s after boot
+    setInterval(runPlanLoop, PLAN_LOOP_MS)         // then every 15 min
   })
 })
 

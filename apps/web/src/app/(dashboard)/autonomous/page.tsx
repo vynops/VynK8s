@@ -106,9 +106,9 @@ const OUTCOME_LABEL: Record<string, string> = {
 }
 
 const ALLOWED_ACTIONS = [
-  { id: 'restart_deployment', label: 'Restart Deployment', risk: 'Low',    comingSoon: false },
-  { id: 'delete_pod',         label: 'Delete Pod',         risk: 'Medium', comingSoon: false },
-  { id: 'scale_deployment',   label: 'Scale Deployment',   risk: 'Medium', comingSoon: false },
+  { id: 'restart_deployment', label: 'Restart Deployment',  risk: 'Low',    comingSoon: false },
+  { id: 'delete_pod',         label: 'Clean Up Stuck Pods', risk: 'Medium', comingSoon: false },
+  { id: 'scale_deployment',   label: 'Scale Deployment',    risk: 'Medium', comingSoon: false },
 ]
 
 // ── AI Remediation Plans types ────────────────────────────────────────────────
@@ -245,6 +245,10 @@ function AiPlansSection() {
           </button>
         </div>
       </div>
+      <p className="px-5 py-2 text-2xs text-surface-500 border-b border-surface-800">
+        When AI plan generation is on, new critical/high/medium incidents without a plan are checked automatically every 15 minutes.
+        Use <strong className="text-surface-400">Generate now</strong> to check immediately instead of waiting for the next cycle.
+      </p>
 
       {/* Config strip */}
       <div className="px-5 py-3 border-b border-surface-800 bg-surface-950/40 flex flex-wrap items-center gap-4">
@@ -721,6 +725,7 @@ export default function AutonomousPage() {
             ['Cooldown',    'Each workload has a 1-hour cooldown — no repeated healing storms'],
             ['Resolve',     'Pod → ReplicaSet → Deployment owner chain is resolved before patching'],
             ['Act or Log',  'In dry-run mode: logged only. Live mode: patches K8s, sends Slack alert, appends to audit log'],
+            ['Stuck pods',  'Separately (same cycle): pods stuck Terminating 15+ min past their own grace period are force-deleted if "Clean Up Stuck Pods" is allowed — a direct status check, not an AI prediction, with its own 1-hour per-pod cooldown and a 10/24h cluster-wide cap'],
           ].map(([step, desc], i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-2xs font-bold flex-shrink-0 mt-0.5">{i + 1}</span>

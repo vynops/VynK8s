@@ -22,6 +22,13 @@ const COOLDOWN_MS      = 60 * 60 * 1000
 const VERIFY_AFTER_MS  =  5 * 60 * 1000
 const VERIFY_BEFORE_MS =  2 * 60 * 60 * 1000
 
+// Stuck-Terminating pod cleanup: a deterministic status check (not an AI
+// prediction), so it has its own thresholds instead of a confidence score.
+const STUCK_TERMINATING_ACTION      = 'delete_stuck_pod'
+const STUCK_TERMINATING_THRESHOLD_MS = 15 * 60 * 1000   // must be this far past its own grace period
+const STUCK_TERMINATING_COOLDOWN_MS  = 60 * 60 * 1000   // per-pod: don't retry the same pod sooner than this
+const STUCK_TERMINATING_MAX_PER_24H  = 10               // cluster-wide cap; beyond this, flag for manual review
+
 // In-memory cooldown ? hydrated from log on startup/every 5 min (restart-safe)
 const actionCooldown     = new Map<string, number>()
 const dryRunSeen         = new Map<string, number>()
@@ -163,6 +170,21 @@ async function deletePod(deploymentName: string, namespace: string): Promise<str
   )
   if (!r.ok) throw new Error(`K8s DELETE pod ${r.status}: ${await r.text().catch(() => '')}`)
   return podName
+}
+
+/** Force-delete a specific, already-identified pod (grace period 0). Unlike
+ * deletePod(), this targets a known pod directly rather than resolving one by
+ * label from a workload name — used for the stuck-Terminating cleanup, where
+ * the exact pod is already in hand from the cluster-wide pod scan. */
+async function forceDeleteStuckPod(namespace: string, podName: string): Promise<void> {
+  const K8S = await resolveK8sUrl()
+  if (!K8S) throw new Error('K8S_API_URL not configured')
+  const r = await fetch(
+    `${K8S}/api/v1/namespaces/${encodeURIComponent(namespace)}/pods/${encodeURIComponent(podName)}?gracePeriodSeconds=0`,
+    { method: 'DELETE', signal: AbortSignal.timeout(10000) },
+  )
+  // A 404 means it already cleared on its own between detection and deletion — treat as success.
+  if (!r.ok && r.status !== 404) throw new Error(`K8s DELETE pod ${r.status}: ${await r.text().catch(() => '')}`)
 }
 
 async function scaleWorkload(kind: WorkloadKind, name: string, namespace: string, replicas: number) {
@@ -441,6 +463,78 @@ async function runLoop(req: Request) {
 
     appendLog(entry)
     actions.push(entry)
+  }
+
+  // ── Stuck-Terminating pod cleanup ──────────────────────────────────────────
+  // Deterministic status check, independent of the AI-insight/confidence
+  // pathway above: force-deletes pods that have sat in Terminating well past
+  // their own grace period. Still respects the master enabled/dryRun toggle
+  // (already gated by the early return above) and the "Delete Pod" checkbox.
+  if (allowedActions.includes('delete_pod')) {
+    try {
+      const allPods = await k8sGet('/api/v1/pods')
+      const stuckLog = readActions().filter(a => a.action === STUCK_TERMINATING_ACTION)
+      const nowTs = Date.now()
+      let dailyCount = stuckLog.filter(a => nowTs - Date.parse(a.ts) < 24 * 3600_000).length
+      const lastAttempt = (key: string) =>
+        stuckLog.filter(a => a.target === key).reduce((max, a) => Math.max(max, Date.parse(a.ts) || 0), 0)
+
+      for (const pod of (allPods?.items ?? [])) {
+        const delTs = pod.metadata?.deletionTimestamp
+        if (!delTs) continue
+        const graceSecs = pod.metadata?.deletionGracePeriodSeconds ?? pod.spec?.terminationGracePeriodSeconds ?? 30
+        const stuckMs = nowTs - (Date.parse(delTs) + graceSecs * 1000)
+        if (!(stuckMs >= STUCK_TERMINATING_THRESHOLD_MS)) continue
+
+        const namespace = pod.metadata.namespace
+        const podName   = pod.metadata.name
+        const targetKey = `${namespace}/${podName}:${pod.metadata.uid}`
+        if (nowTs - lastAttempt(targetKey) < STUCK_TERMINATING_COOLDOWN_MS) continue
+
+        const stuckMins = Math.round(stuckMs / 60_000)
+        const entry: AutonomousAction = {
+          id: generateId(), ts: new Date().toISOString(),
+          insightId: `stuck-terminating:${pod.metadata.uid}`,
+          insight:   `Pod stuck Terminating ${stuckMins}+ min past its grace period`,
+          action:    STUCK_TERMINATING_ACTION, target: targetKey, namespace,
+          confidence: 100, dryRun, result: 'dry_run',
+        }
+
+        if (dryRun) {
+          appendLog(entry); actions.push(entry); continue
+        }
+        if (dailyCount >= STUCK_TERMINATING_MAX_PER_24H) {
+          entry.result = 'skipped_cooldown'
+          entry.error  = `Daily limit of ${STUCK_TERMINATING_MAX_PER_24H} stuck-pod cleanups reached; manual investigation needed.`
+          appendLog(entry); actions.push(entry); continue
+        }
+
+        try {
+          await forceDeleteStuckPod(namespace, podName)
+          entry.result = 'ok'
+          dailyCount++
+          await slackNotify(
+            `\uD83E\uDDF9 *VynOps Auto-Heal*\n` +
+            `\u2022 Action: \`${STUCK_TERMINATING_ACTION}\`\n` +
+            `\u2022 Target: \`${namespace}/${podName}\`\n` +
+            `\u2022 Reason: stuck Terminating ${stuckMins}+ min past grace period`,
+          )
+          appendAuditLog({
+            ts:     entry.ts,
+            user:   'autonomous-agent',
+            action: `autonomous.${STUCK_TERMINATING_ACTION}`,
+            detail: `${namespace}/${podName} force-deleted (stuck Terminating ${stuckMins}+ min past grace period)`,
+          })
+        } catch (e: any) {
+          entry.result = 'failed'
+          entry.error  = e.message
+        }
+        appendLog(entry)
+        actions.push(entry)
+      }
+    } catch (e: any) {
+      console.error(`[autonomous] stuck-pod scan failed: ${e.message}`)
+    }
   }
 
   return NextResponse.json({

@@ -93,7 +93,9 @@ function ObservabilityInner() {
     const t = searchParams.get('tab')
     return (TABS as readonly string[]).includes(t ?? '') ? t as Tab : 'Metrics'
   })
-  const [search, setSearch]               = useState('')
+  // Pre-filter the Metrics tab's service table when navigated here with ?service=
+  // (e.g. from a dashboard service card); Traces tab filters from the same param.
+  const [search, setSearch]               = useState(() => searchParams.get('service') ?? '')
   const [filterStatus, setFilterStatus]   = useState<string>('all')
   const [filterOpen, setFilterOpen]       = useState(false)
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null)

@@ -570,6 +570,7 @@
 - Dry-run mode: logged only; Live mode: patches K8s + Slack + audit log
 - Outcome verification: checks each healed workload 15 min later, marks resolved/persisted
 - Adaptive learning: per-pattern success rate in `data/autonomous.outcomes.jsonl`, adjusts effective confidence threshold
+- Stuck-Terminating pod cleanup (`delete_stuck_pod`): runs in the same cycle but independent of the AI-insight/confidence pathway above — a deterministic check on pods stuck `Terminating` 15+ min past their own grace period. Gated by the "Delete Pod" (`delete_pod`) allowed-action toggle; own 1-hour per-pod cooldown and 10/24h cluster-wide cap (logged to the same `autonomous.log.jsonl`)
 
 ### L3 - SLA Auto-Escalation
 *(See Section 25)*
@@ -579,6 +580,7 @@
 
 ### L5 - AI Remediation Plans (`/api/autonomous/plan`)
 - Plan generation: Groq (llama-4-scout) generates multi-step plans for open critical/high incidents
+- Triggered automatically every 15 minutes by a server-side cron (`server.mjs`), and on-demand via "Generate now"; both no-op when `auto_plan_enabled=false` and skip incidents that already have an active plan
 - Bounded vocabulary: LLM chooses from 12 validated action primitives only - cannot invent commands
   - Read-only (low risk): `check_pod_status`, `check_pod_logs`, `check_rollout_history`, `check_events`, `check_resource_usage`
   - Remediation (medium risk): `restart_deployment`, `rollback_deployment`, `scale_deployment`, `patch_memory_limit`, `delete_crashed_pod`, `verify_health`

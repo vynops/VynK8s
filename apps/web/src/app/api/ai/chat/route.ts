@@ -95,7 +95,14 @@ function getModel(used?: { provider: string; model: string }): any {
   if (used) { used.provider = provider; used.model = model }
   if (provider === 'google') return createGoogleGenerativeAI({ apiKey })(model)
   if (provider === 'anthropic') return createAnthropicModel(apiKey, model)
-  const openai = createOpenAI({ apiKey, baseURL: baseUrl || (provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined) })
+  // 'strict' mode requests usage stats on streaming responses (stream_options.include_usage).
+  // Commercial providers return usage regardless, but self-hosted/custom servers (e.g. local
+  // Ollama-style endpoints) often only include it when explicitly asked.
+  const openai = createOpenAI({
+    apiKey,
+    baseURL: baseUrl || (provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined),
+    compatibility: 'strict',
+  })
   return openai(model, { parallelToolCalls: false })
 }
 
@@ -995,13 +1002,14 @@ export async function POST(req: Request) {
     let failureRecorded = false
     const recordFailure = (error: unknown) => {
       if (failureRecorded) return
+      const details = getAIUsageFailure(error)
       failureRecorded = true
       recordAIUsage({
         source: 'copilot',
         provider: used.provider,
         model: used.model,
         durationMs: Date.now() - startedAt,
-        ...getAIUsageFailure(error),
+        ...details,
       })
     }
     const result = streamText({

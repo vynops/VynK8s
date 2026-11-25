@@ -840,9 +840,11 @@ function KubernetesInner() {
   const handleDeletePod = useCallback(async () => {
     if (!deletePod) return
     setDeletingPod(true)
-    await fetch(`/api/k8s/pods/${encodeURIComponent(deletePod.namespace)}/${encodeURIComponent(deletePod.name)}/delete`, { method: 'DELETE', headers: getClusterHeaders() })
+    const r = await fetch(`/api/k8s/pods/${encodeURIComponent(deletePod.namespace)}/${encodeURIComponent(deletePod.name)}/delete`, { method: 'DELETE', headers: getClusterHeaders() }).catch(() => null)
     setDeletingPod(false)
     setDeletePod(null)
+    setOpToast({ message: r?.ok ? `Deleted ${deletePod.name}` : `Delete failed${r ? ` (HTTP ${r.status})` : ''}`, ok: !!r?.ok })
+    setTimeout(() => setOpToast(null), 4000)
     setTimeout(() => refreshPods(), 1500)
   }, [deletePod, refreshPods])
 

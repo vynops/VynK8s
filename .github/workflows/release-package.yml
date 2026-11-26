@@ -1,0 +1,33 @@
+name: Package release source
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Package tagged source with version metadata
+        shell: bash
+        env:
+          VYNK8S_RELEASE_BODY: ${{ github.event.release.body }}
+        run: |
+          set -euo pipefail
+          node apps/web/scripts/package-release.mjs "$GITHUB_WORKSPACE" "$RUNNER_TEMP/vynk8s-source.tar.gz" "$RUNNER_TEMP/vynk8s-manifest.json"
+          cd "$RUNNER_TEMP"
+          sha256sum vynk8s-source.tar.gz vynk8s-manifest.json > vynk8s-sha256.txt
+      - name: Attach source package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/vynk8s-source.tar.gz" "$RUNNER_TEMP/vynk8s-manifest.json" "$RUNNER_TEMP/vynk8s-sha256.txt"

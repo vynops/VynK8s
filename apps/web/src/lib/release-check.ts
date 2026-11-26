@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { maintenanceReasons } from './update-policy.js'
 
-const API = 'https://api.github.com/repos/vynops/VynOps'
+const API = 'https://api.github.com/repos/vynops/VynK8s'
 const releaseSchema = z.object({
   tag_name: z.string().min(1),
   name: z.string().nullable(),

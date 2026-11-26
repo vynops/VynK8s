@@ -76,7 +76,7 @@ function exportSlaCSV(sla: SlaService[]) {
   const a = document.createElement('a')
   const blobUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
   a.href = blobUrl
-  a.download = `vynops-sla-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `vynk8s-sla-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
 }

@@ -1,4 +1,4 @@
-﻿# VynOps AI â€" Implemented Features (v0.7.0)
+﻿# VynK8s AI â€" Implemented Features (v0.7.0)
 
 > **Stack:** Next.js 15 Â· React 19 Â· TypeScript Â· Tailwind CSS Â· Zustand Â· Framer Motion Â· Recharts Â· date-fns Â· NextAuth v5 Â· Vercel AI SDK v4 Â· Groq (llama-4-scout)  
 > **Status:** Full-stack production backend: real K8s API, Prometheus metrics, Groq AI, incident management, SLA auto-escalation (L3), auto-runbook trigger (L4), AI remediation plans (L5), autonomous healing loop, runtime config, Slack + PagerDuty + SMTP alerts, one-click CIS security fixes, topology incident intelligence
@@ -13,7 +13,7 @@
 - Active route highlighting with cyan accent
 - Live badge counters on Incidents (open count) and Observability (firing alert count)
 - AI Copilot section highlighted with gradient treatment
-- Brand logo with "VynOps AI Platform" label
+- Brand logo with "VynK8s AI Platform" label
 
 ### Top Header Bar
 - Global search button (opens Command Palette)
@@ -432,7 +432,7 @@
 ## 20. Authentication & RBAC (NextAuth v5)
 
 ### Login Page (`/login`)
-- Dark branded login page with VynOps gradient logo
+- Dark branded login page with VynK8s gradient logo
 - Email + password form with validation
 - **3 demo credential chips** â€” click to autofill, one per role
 - Error message on invalid credentials
@@ -442,9 +442,9 @@
 ### Demo Accounts
 | Email | Password | Role |
 |-------|----------|------|
-| `admin@VynOps.io` | `admin123` | Admin (full access) |
-| `operator@VynOps.io` | `operator123` | Operator (acknowledge, run automations) |
-| `viewer@VynOps.io` | `viewer123` | Viewer (read-only) |
+| `admin@vynk8s.local` | `admin123` | Admin (full access) |
+| `operator@vynk8s.local` | `operator123` | Operator (acknowledge, run automations) |
+| `viewer@vynk8s.local` | `viewer123` | Viewer (read-only) |
 
 ### Middleware Protection
 - All `/dashboard/*` routes protected â€” unauthenticated users redirected to `/login?callbackUrl=...`

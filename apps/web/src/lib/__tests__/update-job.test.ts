@@ -9,7 +9,7 @@ let scratch: string
 let web: string
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-job-test-'))
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-job-test-'))
   web = join(scratch, 'web')
   mkdirSync(join(web, 'data'), { recursive: true })
   const bin = process.platform === 'win32' ? join(scratch, 'node_modules', 'pm2', 'bin') : scratch
@@ -26,7 +26,7 @@ afterEach(() => {
 describe('update job state', () => {
   it('creates one durable job and rejects concurrent starts', () => {
     const invoke = vi.fn()
-    const job = { tag: 'v2.1.0', commit: 'b'.repeat(40), baseCommit: 'a'.repeat(40), appId: 0, pid: 123, port: 3030 }
+    const job = { tag: 'v2.1.0', commit: 'b'.repeat(40), baseCommit: 'a'.repeat(40), appId: 0, pid: 123,     port: 4030 }
     const status = startJob(web, job, invoke)
     expect(readStatus(web)).toMatchObject({ ...status, phase: 'queued' })
     expect(invoke).toHaveBeenCalledOnce()
@@ -47,7 +47,7 @@ describe('update job state', () => {
   })
 
   it('does not replay an interrupted worker', () => {
-    const job = { tag: 'v2.1.0', commit: 'b'.repeat(40), baseCommit: 'a'.repeat(40), appId: 0, pid: 123, port: 3030 }
+    const job = { tag: 'v2.1.0', commit: 'b'.repeat(40), baseCommit: 'a'.repeat(40), appId: 0, pid: 123,     port: 4030 }
     const status = startJob(web, job, vi.fn())
     const state = stateDirectory(web, false)
     if (!state) throw new Error('Update state was not created')

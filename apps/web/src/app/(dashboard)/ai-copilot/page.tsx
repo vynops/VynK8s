@@ -28,7 +28,7 @@ interface Insight {
 }
 
 // ── Constants ─────────────────────────────────────────────────
-const STORAGE_KEY = 'vynops_conversations_v2'
+const STORAGE_KEY = 'vynk8s_conversations_v2'
 
 const MODES: Record<ModeKey, { label: string; icon: any; color: string; sysHint: string; prompts: string[] }> = {
   investigate: {
@@ -91,7 +91,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: 'init-1',
     role: 'assistant',
-    content: `**VynOps AI online.** Real-time SRE copilot with causal reasoning, predictive analytics, and autonomous remediation.
+    content: `**VynK8s AI online.** Real-time SRE copilot with causal reasoning, predictive analytics, and autonomous remediation.
 
 **Capabilities:**
 - **Investigate** — multi-layer RCA (L7→L1), blast-radius analysis, live event correlation
@@ -1129,7 +1129,7 @@ export default function AICopilotPage() {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white">VynOps AI Online</p>
+              <p className="text-sm font-bold text-white">VynK8s AI Online</p>
               <p className="text-2xs text-surface-400 truncate">
                 Real-time SRE copilot — causal reasoning, predictive analytics &amp; autonomous remediation
               </p>

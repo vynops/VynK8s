@@ -1,0 +1,68 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: vynk8s-fast-detection
+  namespace: monitoring
+  labels:
+    release: monitoring
+    app.kubernetes.io/managed-by: vynk8s
+spec:
+  groups:
+    - name: vynk8s.fast-detection
+      rules:
+        - alert: VynK8sWorkloadDown
+          expr: kube_deployment_spec_replicas > 0 and kube_deployment_status_replicas_available == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has no available replicas"
+        - alert: VynK8sWorkloadDown
+          expr: kube_statefulset_replicas > 0 and kube_statefulset_status_replicas_ready == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has no ready replicas"
+        - alert: VynK8sWorkloadDegraded
+          expr: kube_deployment_status_replicas_available > 0 and kube_deployment_status_replicas_available < kube_deployment_spec_replicas
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} is running fewer replicas than desired"
+        - alert: VynK8sWorkloadDegraded
+          expr: kube_statefulset_status_replicas_ready > 0 and kube_statefulset_status_replicas_ready < kube_statefulset_replicas
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} is running fewer replicas than desired"
+        - alert: VynK8sPodRestartingFast
+          expr: increase(kube_pod_container_status_restarts_total[10m]) >= 3
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} restarted 3 or more times in 10 minutes"
+        - alert: VynK8sNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} is not ready"
+        - alert: VynK8sDiskUsageHigh
+          expr: max((1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs"}) * 100) > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host disk is over 85% full (all k3d nodes share one disk)"
+        - alert: VynK8sDiskUsageCritical
+          expr: max((1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs"}) * 100) > 90
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Host disk is over 90% full; kubelet will start evicting pods"

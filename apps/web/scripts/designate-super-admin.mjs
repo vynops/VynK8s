@@ -3,8 +3,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const WEB_DIR = join(dirname(fileURLToPath(import.meta.url)), '..')
-const DATA_DIR = process.env.VYNOPS_SUPER_ADMIN_DATA_DIR || join(WEB_DIR, 'data')
-const AUDIT_PATH = process.env.VYNOPS_SUPER_ADMIN_AUDIT_PATH || join(WEB_DIR, 'audit.log.jsonl')
+const DATA_DIR = process.env.VYNK8S_SUPER_ADMIN_DATA_DIR || join(WEB_DIR, 'data')
+const AUDIT_PATH = process.env.VYNK8S_SUPER_ADMIN_AUDIT_PATH || join(WEB_DIR, 'audit.log.jsonl')
 
 export function designateSuperAdmin(email, { dataDir = DATA_DIR, auditPath = AUDIT_PATH } = {}) {
   const normalizedEmail = String(email ?? '').trim().toLowerCase()

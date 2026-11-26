@@ -15,7 +15,7 @@ const DEFAULT_DATA: OnCallData = {
       rotationDays:  7,
       rotationStart: '2026-06-02T00:00:00Z',
       members: [
-        { id: 'm1', name: 'Admin', email: 'admin@VynOps.io' },
+        { id: 'm1', name: 'Admin', email: 'admin@vynk8s.local' },
       ],
       escalationLevels: [
         { level: 1, delayMins: 0,  description: 'Primary on-call' },

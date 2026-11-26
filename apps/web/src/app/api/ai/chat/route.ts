@@ -110,7 +110,7 @@ function getModel(used?: { provider: string; model: string }): any {
 async function buildSystemPrompt(): Promise<string> {
   const meta = await resolveClusterMeta()
   const clusterCtx = meta ? `cluster: ${meta.name}, ${meta.provider} ${meta.region}`.trim().replace(/,\s*$/, '') : 'cluster: unknown'
-  return `You are VynOps AI — a Level 5 SRE Copilot for VynOps (${clusterCtx}). ALWAYS call tools before answering. Never fabricate metrics or resource names.
+  return `You are VynK8s AI — a Level 5 SRE Copilot for VynK8s (${clusterCtx}). ALWAYS call tools before answering. Never fabricate metrics or resource names.
 
 CLUSTER CONTEXT: k3d/k3s embeds the control plane — KubeControllerManagerDown, KubeProxyDown, KubeSchedulerDown alerts are FALSE POSITIVES (components not scrape-able). Treat these as INFO, not critical.
 

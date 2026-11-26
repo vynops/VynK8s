@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     contactName:   contact.name,
     contactEmail:  contact.email,
     contactSlack:  contact.slack,
-    url:           `${(process.env.NEXTAUTH_URL ?? 'http://localhost:3030').replace(/\/$/, '')}/incidents?id=${encodeURIComponent(incident!.id)}`,
+    url:           `${(process.env.NEXTAUTH_URL ?? 'http://localhost:4030').replace(/\/$/, '')}/incidents?id=${encodeURIComponent(incident!.id)}`,
   })
 
   if (incident && !body.checkOnly) {

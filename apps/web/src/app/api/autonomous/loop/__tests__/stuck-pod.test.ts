@@ -4,7 +4,7 @@ const sandbox = await vi.hoisted(async () => {
   const fs = await import('node:fs')
   const os = await import('node:os')
   const path = await import('node:path')
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vynops-stuck-pod-'))
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vynk8s-stuck-pod-'))
   fs.mkdirSync(path.join(root, 'data'))
   vi.spyOn(process, 'cwd').mockReturnValue(root)
   return root

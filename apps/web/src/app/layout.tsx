@@ -11,7 +11,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: { default: 'VynOps · VynOps Suite', template: '%s | VynOps' },
+  title: { default: 'VynK8s · VynOps Suite', template: '%s | VynK8s' },
   description: 'AI-Native Cloud Operations Platform — Enterprise AIOps for Kubernetes, Cloud & Infrastructure',
   keywords: ['AIOps', 'Kubernetes', 'Observability', 'AI Operations', 'SRE', 'DevOps'],
   icons: { icon: '/api/favicon', shortcut: '/api/favicon', apple: '/api/favicon' },
@@ -26,9 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   try{
     var V=['15m','30m','1h','3h','6h','12h','24h','7d','30d'];
     var tr=localStorage.getItem('timeRange');
-    if(tr&&V.indexOf(tr)!==-1)window.__VYNOPS_TR=tr;
+    if(tr&&V.indexOf(tr)!==-1)window.__VYNK8S_TR=tr;
     var rt=localStorage.getItem('realtimeActive');
-    if(rt!==null)window.__VYNOPS_RT=rt==='true';
+    if(rt!==null)window.__VYNK8S_RT=rt==='true';
   }catch(e){}
 })();`
   return (
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         {/* Runs before ANY other script — guarantees localStorage is read before
             the Zustand store module evaluates on the client. */}
-        <Script id="vynops-preinit" strategy="beforeInteractive"
+        <Script id="vynk8s-preinit" strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: preinitScript }} />
         <Providers>{children}</Providers>
       </body>

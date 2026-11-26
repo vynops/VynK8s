@@ -7,10 +7,10 @@ const os = require('node:os')
 const path = require('node:path')
 
 if (process.platform !== 'linux') throw new Error('This isolated integration test requires Linux')
-const pm2 = process.env.VYNOPS_TEST_PM2
-if (!pm2 || !fs.existsSync(pm2)) throw new Error('Set VYNOPS_TEST_PM2 to an isolated PM2 CLI')
+const pm2 = process.env.VYNK8S_TEST_PM2
+if (!pm2 || !fs.existsSync(pm2)) throw new Error('Set VYNK8S_TEST_PM2 to an isolated PM2 CLI')
 const source = path.resolve(__dirname, '..', '..', '..')
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vynops-update-integration-'))
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'vynk8s-update-integration-'))
 const root = path.join(scratch, 'install')
 const web = path.join(root, 'apps', 'web')
 const name = 'apps/web/src/app/(dashboard)/settings/page.tsx'
@@ -50,8 +50,8 @@ async function waitForJob(readStatus, id) {
     if (status && status.id === id && ['completed', 'rolled-back', 'failed', 'manual-recovery-required'].includes(status.phase)) {
       if (status.phase === 'failed' || status.phase === 'manual-recovery-required') {
         try {
-          console.log(`--- update worker logs for vynops-update-${id} ---`)
-          console.log(command(pm2, ['logs', `vynops-update-${id}`, '--lines', '200', '--nostream'], web))
+          console.log(`--- update worker logs for vynk8s-update-${id} ---`)
+          console.log(command(pm2, ['logs', `vynk8s-update-${id}`, '--lines', '200', '--nostream'], web))
         } catch (error) {
           console.log('Unable to fetch worker logs:', error.message)
         }
@@ -64,7 +64,7 @@ async function waitForJob(readStatus, id) {
 }
 async function waitForUnlock() {
   for (let i = 0; i < 120; i++) {
-    if (!fs.existsSync(path.join(web, 'data', '.vynops-updater', 'active'))) return
+    if (!fs.existsSync(path.join(web, 'data', '.vynk8s-updater', 'active'))) return
     await sleep(250)
   }
   throw new Error('Update lock was not released')
@@ -91,7 +91,7 @@ async function main() {
   const configFile = path.join(web, '.env.local')
   const users = JSON.stringify([{ id: 'test-admin', role: 'admin', isSuperAdmin: true }])
   const config = 'AUTH_SECRET=isolated-test-secret-not-for-production-123456\n' +
-    'NEXTAUTH_URL=http://localhost:3030\n' +
+    'NEXTAUTH_URL=http://localhost:4030\n' +
     // Placeholder (non-secret) values only. GROQ_API_KEY/GROQ_MODEL are
     // required for the AI Copilot feature; omitting them entirely can cause
     // its pages to behave differently during static generation.
@@ -108,21 +108,21 @@ async function main() {
   fs.writeFileSync(path.join(web, 'release-version.json'), JSON.stringify(base) + '\n')
   process.env.NEXT_TELEMETRY_DISABLED = '1'
   process.env.AUTH_SECRET = 'isolated-test-secret-not-for-production-123456'
-  execFileSync('npm', ['run', 'build', '--workspace=@VynOps/web'], {
+  execFileSync('npm', ['run', 'build', '--workspace=@vynk8s/web'], {
     cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15 * 60 * 1000, maxBuffer: 16 * 1024 * 1024,
   })
 
   for (const key of Object.keys(process.env)) if (key.startsWith('PM2_')) delete process.env[key]
   process.env.PM2_HOME = path.join(scratch, 'pm2')
   process.env.NODE_OPTIONS = `--require=${path.join(web, 'scripts', 'test-update-source.cjs')}`
-  process.env.VYNOPS_TEST_TARGET = path.join(scratch, 'target.json')
+  process.env.VYNK8S_TEST_TARGET = path.join(scratch, 'target.json')
   process.env.PORT = String(await unusedPort())
-  fs.writeFileSync(process.env.VYNOPS_TEST_TARGET, JSON.stringify({ name, target, content: updated.toString('base64') }))
+  fs.writeFileSync(process.env.VYNK8S_TEST_TARGET, JSON.stringify({ name, target, content: updated.toString('base64') }))
   const { startJob, readStatus } = require(path.join(web, 'src', 'lib', 'update-job.js'))
   try {
     cleanupSafe = false
-    command(pm2, ['start', path.join(web, 'server.mjs'), '--name', 'vynops', '--cwd', web, '--no-autorestart'], web)
-    let app = processes().find(item => item.name === 'vynops' && item.pm2_env.pm_cwd === web)
+    command(pm2, ['start', path.join(web, 'server.mjs'), '--name', 'vynk8s', '--cwd', web, '--no-autorestart'], web)
+    let app = processes().find(item => item.name === 'vynk8s' && item.pm2_env.pm_cwd === web)
     assert.ok(app)
     await waitReady(Number(process.env.PORT))
     let job = startJob(web, { tag: 'v-test', commit: target.commit, baseCommit: base.commit,
@@ -136,7 +136,7 @@ async function main() {
     const prior = target
     const invalid = Buffer.concat([updated, Buffer.from('\nthis is invalid typescript !!!\n')])
     target = { ...prior, commit: 'c'.repeat(40), files: { [name]: entry(invalid) } }
-    fs.writeFileSync(process.env.VYNOPS_TEST_TARGET, JSON.stringify({ name, target, content: invalid.toString('base64') }))
+    fs.writeFileSync(process.env.VYNK8S_TEST_TARGET, JSON.stringify({ name, target, content: invalid.toString('base64') }))
     job = startJob(web, { tag: 'v-test', commit: target.commit, baseCommit: prior.commit,
       appId: app.pm_id, pid: app.pid, port: Number(process.env.PORT) })
     assert.equal((await waitForJob(readStatus, job.id)).phase, 'rolled-back')

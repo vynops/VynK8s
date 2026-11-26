@@ -1,6 +1,6 @@
 <div align="center">
 
-# VynOps AI Platform
+# VynK8s AI Platform
 
 ### AI-Powered Kubernetes Operations Platform
 
@@ -13,7 +13,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io)
 [![Playwright](https://img.shields.io/badge/Tested_with-Playwright-2EAD33?logo=playwright&logoColor=white)](apps/web/tests/e2e)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-vynops.online-6366f1)](https://vynops.online)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-k8s.vynops.online-6366f1)](https://k8s.vynops.online)
 
 *Observe. Predict. Remediate. All from one intelligent dashboard.*
 
@@ -23,11 +23,13 @@
 
 ## Overview
 
-VynOps is a production-grade, self-hosted AIOps platform for Kubernetes. It unifies observability, incident management, cost intelligence, security posture, and autonomous remediation into a single AI-assisted interface — eliminating the need to switch between Prometheus dashboards, Grafana, kubectl, spreadsheets, and Slack during incidents.
+VynK8s is the AI-powered Kubernetes operations product of the VynOps Suite.
 
-Built on **Next.js 15 App Router** with a real-time custom WebSocket server, VynOps connects directly to your Kubernetes cluster via `kubectl proxy` and your existing Prometheus/Loki/Jaeger stack — no agents, no sidecars, no vendor lock-in.
+VynK8s is a production-grade, self-hosted AIOps platform for Kubernetes. It unifies observability, incident management, cost intelligence, security posture, and autonomous remediation into a single AI-assisted interface — eliminating the need to switch between Prometheus dashboards, Grafana, kubectl, spreadsheets, and Slack during incidents.
 
-> **Design philosophy:** VynOps does not replace your monitoring stack. It sits on top of it and adds intelligence.
+Built on **Next.js 15 App Router** with a real-time custom WebSocket server, VynK8s connects directly to your Kubernetes cluster via `kubectl proxy` and your existing Prometheus/Loki/Jaeger stack — no agents, no sidecars, no vendor lock-in.
+
+> **Design philosophy:** VynK8s does not replace your monitoring stack. It sits on top of it and adds intelligence.
 
 ---
 
@@ -35,7 +37,7 @@ Built on **Next.js 15 App Router** with a real-time custom WebSocket server, Vyn
 
 | Login | Operations Overview |
 |---|---|
-| <a href="screenshots/Screenshot%202026-09-07%20122230.png"><img src="screenshots/Screenshot%202026-09-07%20122230.png" width="100%" alt="VynOps sign-in screen" /></a> | <a href="screenshots/Screenshot%202026-09-07%20122727.png"><img src="screenshots/Screenshot%202026-09-07%20122727.png" width="100%" alt="Operations overview with cluster health and AI insights" /></a> |
+| <a href="screenshots/Screenshot%202026-09-07%20122230.png"><img src="screenshots/Screenshot%202026-09-07%20122230.png" width="100%" alt="VynK8s sign-in screen" /></a> | <a href="screenshots/Screenshot%202026-09-07%20122727.png"><img src="screenshots/Screenshot%202026-09-07%20122727.png" width="100%" alt="Operations overview with cluster health and AI insights" /></a> |
 | Observability Metrics | Kubernetes Pods |
 | <a href="screenshots/Screenshot%202026-09-07%20122754.png"><img src="screenshots/Screenshot%202026-09-07%20122754.png" width="100%" alt="Observability metrics from Prometheus" /></a> | <a href="screenshots/Screenshot%202026-09-07%20122821.png"><img src="screenshots/Screenshot%202026-09-07%20122821.png" width="100%" alt="Kubernetes pod status and workload view" /></a> |
 | Cluster Infrastructure | Service Topology |
@@ -84,7 +86,7 @@ Built on **Next.js 15 App Router** with a real-time custom WebSocket server, Vyn
 - **Live metrics** — CPU, memory, disk, network from Prometheus with configurable time ranges (15m → 30d)
 - **Log streaming** — Loki integration with label browser, live tail, and log-level filtering
 - **Distributed tracing** — Jaeger trace viewer with service dependency maps
-- **Grafana embeds** — Surface existing dashboards directly inside VynOps
+- **Grafana embeds** — Surface existing dashboards directly inside VynK8s
 
 ### 🚨 Incident Management
 - **Auto-generated incidents** — Prometheus alerts grouped into incidents with SLA tracking and escalation levels
@@ -92,6 +94,7 @@ Built on **Next.js 15 App Router** with a real-time custom WebSocket server, Vyn
 - **Timeline** — Full audit trail from alert fire to resolution
 - **Manual incidents** — Create, assign, and track non-alert incidents
 - **SLA breach warnings** — Real-time countdown before SLA deadline
+- **VynK8s naming** — Incident, alert and notification names (alert names such as `VynK8sWorkloadDown`, Slack/Teams/PagerDuty messages, the `X-VynK8s-Event` header) use the VynK8s name
 
 ### 🤖 AI Copilot
 - **Conversational interface** — Ask in plain English: *"Why is my payments service slow?"*
@@ -210,8 +213,8 @@ Built on **Next.js 15 App Router** with a real-time custom WebSocket server, Vyn
 
 ```bash
 # 1. Clone
-git clone https://github.com/YOUR-USERNAME/vynops.git
-cd vynops
+git clone https://github.com/YOUR-USERNAME/vynk8s.git
+cd vynk8s
 
 # 2. Install all workspace dependencies
 npm install
@@ -220,15 +223,15 @@ npm install
 # Do not copy .env.local.example over it; that would replace the generated secret.
 ```
 
-The initial admin defaults to `admin@vynops.io` and the temporary password is `changeme`. No password or `.env.local` setup is required. Keep the installation on a trusted network until the first-login password change is complete.
+The initial admin defaults to `admin@vynk8s.local` and the temporary password is `changeme`. No password or `.env.local` setup is required. Keep the installation on a trusted network until the first-login password change is complete.
 
 ```bash
 # 4. Start kubectl proxy (in a separate terminal, when connecting to a cluster)
 kubectl proxy --port=8001
 
-# 5. Start VynOps
+# 5. Start VynK8s
 npm run dev
-# → http://localhost:3030
+# → http://localhost:4030
 ```
 
 Install creates the super-admin in `apps/web/data/users.json` and its bcrypt password hash in `apps/web/data/passwords.json`. On first login, the app requires the super-admin to replace `changeme` with a password of at least 8 characters before granting access. Setup never overwrites a non-empty user store; existing installs are left untouched.
@@ -252,7 +255,7 @@ When running on a remote VM accessed by its public IP:
 ```bash
 # In apps/web/.env.local on the server:
 AUTH_SECRET=<same strong secret as generated above>
-NEXTAUTH_URL=http://YOUR-SERVER-IP:3030
+NEXTAUTH_URL=http://YOUR-SERVER-IP:4030
 ALLOWED_DEV_ORIGINS=YOUR-SERVER-IP
 GROQ_API_KEY=gsk_...
 K8S_API_URL=http://127.0.0.1:8001
@@ -266,24 +269,25 @@ kubectl proxy --port=8001 --address=127.0.0.1 &
 
 ```bash
 npm run dev
-# → http://YOUR-SERVER-IP:3030
+# → http://YOUR-SERVER-IP:4030
+
 ```
 
-> **Port conflict:** If port 3030 is taken, set `PORT=4030` in `.env.local` and update `NEXTAUTH_URL` to match.
+> **Port conflict:** Default port is 4030. If it is taken, set `PORT=<other port>` in `.env.local` and update `NEXTAUTH_URL` to match.
 
 ---
 
 ### Production with PM2
 
-VynOps uses a **custom Node.js server** (`server.mjs`) that adds WebSocket support for interactive pod terminal (`kubectl exec`). You must use this server — not `next start` — in production too.
+VynK8s uses a **custom Node.js server** (`server.mjs`) that adds WebSocket support for interactive pod terminal (`kubectl exec`). You must use this server — not `next start` — in production too.
 
 ```bash
 # Install PM2 globally
 npm install -g pm2
 
-# Start VynOps (from the apps/web directory)
-cd vynops/apps/web
-pm2 start server.mjs --name vynops --node-args="--max-old-space-size=1536"
+# Start VynK8s (from the apps/web directory)
+cd vynk8s/apps/web
+pm2 start server.mjs --name vynk8s --node-args="--max-old-space-size=1536"
 
 # Save process list and enable auto-start on reboot
 pm2 save
@@ -291,17 +295,17 @@ pm2 startup     # run the command it prints
 
 # Useful PM2 commands
 pm2 status      # view running processes
-pm2 logs vynops # tail logs
-pm2 restart vynops   # restart after config changes
-pm2 stop vynops      # stop
+pm2 logs vynk8s # tail logs
+pm2 restart vynk8s   # restart after config changes
+pm2 stop vynk8s      # stop
 ```
 
 ### Version and release checks
 
 Settings → About displays the Git commit and commit date recorded when the app
 was built. Publishing a GitHub release runs the release-package workflow, which
-attaches `vynops-source.tar.gz` containing `apps/web/release-version.json`, a
-separate `vynops-manifest.json`, and SHA-256 checksums. The manifest includes
+attaches `vynk8s-source.tar.gz` containing `apps/web/release-version.json`, a
+separate `vynk8s-manifest.json`, and SHA-256 checksums. The manifest includes
 hashes of packaged files. Checksums detect corruption; they are not independent
 signatures of the release.
 Clients can build that package without installing Git. Use the attached package,
@@ -315,7 +319,7 @@ at build time. Without either valid metadata or a Git checkout, the installed
 commit is unavailable and is not inferred from GitHub.
 
 After verifying that a release is compatible with existing client data, the
-publisher can include the exact line `VYNOPS_DATA_COMPATIBLE: true` in its
+publisher can include the exact line `VYNK8S_DATA_COMPATIBLE: true` in its
 release notes. Unmarked releases, dependency/package changes and migration
 changes are flagged for separate maintenance. A publisher confirmation is not
 a cryptographic signature and does not guarantee data compatibility.
@@ -329,15 +333,15 @@ can verify the changed files without changing them. Behind a reverse proxy,
 `AUTH_URL` or `NEXTAUTH_URL` must match the public application origin.
 
 The experimental installer is disabled by default. It requires a manifest-based
-build running as the `vynops` PM2 fork process (started either directly with
+build running as the `vynk8s` PM2 fork process (started either directly with
 server.mjs, or via `npm run start`, provided `package.json`'s `start` script is
 exactly `node server.mjs`), a private `apps/web/data` directory on the same
 filesystem as `.next`, and the service environment variable
-`VYNOPS_UPDATES_ENABLED=true`. On Windows, the administrator must also
+`VYNK8S_UPDATES_ENABLED=true`. On Windows, the administrator must also
 restrict the data directory's NTFS permissions to the service account and
 administrators and confirm that affected application files do not rely on
 individual NTFS ACLs (replacement files inherit their parent directory's ACL).
-Only then set `VYNOPS_UPDATES_WINDOWS_ACL_CONFIRMED=true`. Do not enable it on
+Only then set `VYNK8S_UPDATES_WINDOWS_ACL_CONFIRMED=true`. Do not enable it on
 client installations until end-to-end recovery has been tested on the target
 platform.
 
@@ -346,7 +350,7 @@ revalidates the release, backs up the affected files and build, updates only
 changed files, builds, restarts and checks the running process and commit.
 Failures trigger rollback when it is safe; an interrupted or uncertain operation
 retains its lock and requires manual review. Backups and status are kept under
-`apps/web/data/.vynops-updater`. They are not automatically deleted.
+`apps/web/data/.vynk8s-updater`. They are not automatically deleted.
 The `Update integration` GitHub Actions workflow can run an isolated Linux
 actual-app update and build-failure rollback test. This exact scenario (real
 file replacement, build, PM2 restart, health check, and rollback after an
@@ -405,7 +409,7 @@ GRAFANA_URL=http://127.0.0.1:8001/api/v1/namespaces/monitoring/services/monitori
 | `SMTP_PORT` | SMTP port, e.g. `587` |
 | `SMTP_USER` | SMTP username / email address |
 | `SMTP_PASS` | SMTP password or [Gmail app password](https://myaccount.google.com/apppasswords) |
-| `SMTP_FROM` | Sender address, e.g. `VynOps <alerts@company.com>` |
+| `SMTP_FROM` | Sender address, e.g. `VynK8s <alerts@company.com>` |
 
 Fine-tune notification behaviour via **Settings → Notifications** in the UI (saved to `config.runtime.json`).
 
@@ -413,15 +417,28 @@ Fine-tune notification behaviour via **Settings → Notifications** in the UI (s
 
 | Variable | Description |
 |----------|-------------|
-| `PORT` | HTTP port (default: `3030`) |
+| `PORT` | HTTP port (default: `4030`) |
 | `ALLOWED_DEV_ORIGINS` | Comma-separated IPs/hostnames allowed to access the dev server remotely. Leave unset for local development. |
 | `CRON_SECRET` | Secret for internal cron jobs. Auto-generated at startup if not set. |
 
 ---
 
+## Upgrading from VynOps
+
+This product was renamed from VynOps to VynK8s. Apply these breaking renames when upgrading an existing install:
+
+- Environment variables: `VYNOPS_*` → `VYNK8S_*` (e.g. `VYNK8S_UPDATES_ENABLED`)
+- PM2 process: `vynops` → `vynk8s` (`pm2 delete vynops`, then start it as `vynk8s`)
+- Default port: `3030` → `4030` (or keep your own `PORT`; update `NEXTAUTH_URL`, reverse proxy and firewall)
+- Prometheus alert rules: alert names `VynOps*` → `VynK8s*`. Re-apply `deploy/vynk8s-fast-detection.rules.yaml` to the cluster and update any Alertmanager routes matching `alertname=~"VynOps.*"`
+- Repository/release source: `vynops/VynOps` → `vynops/VynK8s`; release assets are now `vynk8s-source.tar.gz`, `vynk8s-manifest.json` and `vynk8s-sha256.txt`
+- Browser-local settings are migrated automatically; users must sign in again once
+
+---
+
 ## Adding Clusters
 
-VynOps supports multiple Kubernetes clusters. Cluster configuration is stored in `apps/web/data/clusters.json` and managed through the UI — no restart required.
+VynK8s supports multiple Kubernetes clusters. Cluster configuration is stored in `apps/web/data/clusters.json` and managed through the UI — no restart required.
 
 **Via the UI (recommended):**
 1. Open **Settings → Clusters**
@@ -466,10 +483,10 @@ Switch models via `GROQ_MODEL` in `.env.local` or by upgrading to Groq Dev Tier 
 
 ## Autonomous Operations
 
-VynOps can take automated remediation actions when issues are detected.
+VynK8s can take automated remediation actions when issues are detected.
 
 **Currently automated:**
-- **CrashLoop auto-restart** — pods with 20+ restarts trigger a rolling restart of the parent Deployment, with a 30-minute cooldown per deployment and a `vynops.ai/last-auto-heal` annotation to prevent re-firing
+- **CrashLoop auto-restart** — pods with 20+ restarts trigger a rolling restart of the parent Deployment, with a 30-minute cooldown per deployment and a `vynk8s.io/last-auto-heal` annotation to prevent re-firing
 
 **Approval-gated plans** (AI generates, human approves each step):
 - Right-sizing resource limits
@@ -486,7 +503,7 @@ Settings → Autonomous Ops → toggle individual action types on/off.
 
 ## Notifications
 
-VynOps sends notifications automatically when critical events occur.
+VynK8s sends notifications automatically when critical events occur. Notification messages (Slack, Teams, PagerDuty), alert names such as `VynK8sWorkloadDown`, and the `X-VynK8s-Event` header use the VynK8s name.
 
 **Notification events:**
 | Event | Default channels | Cooldown |
@@ -534,7 +551,7 @@ VynOps sends notifications automatically when critical events occur.
 ### Network security
 - All K8s API calls go through `kubectl proxy` — no cluster credentials are stored in the app
 - `kubectl proxy` should bind to `127.0.0.1` only (not `0.0.0.0`) in production
-- Run VynOps behind a reverse proxy (nginx/Caddy) with TLS in production
+- Run VynK8s behind a reverse proxy (nginx/Caddy) with TLS in production
 
 ### Content Security
 - No outbound calls except: Groq API, Slack webhook, PagerDuty Events API (all configurable)
@@ -545,7 +562,7 @@ VynOps sends notifications automatically when critical events occur.
 ## Project Structure
 
 ```
-vynops/
+vynk8s/
 ├── apps/
 │   └── web/                          # Next.js 15 application
 │       ├── src/
@@ -625,7 +642,7 @@ vynops/
 
 ## API Reference
 
-VynOps exposes a REST API under `/api/`. All endpoints require authentication (session cookie).
+VynK8s exposes a REST API under `/api/`. All endpoints require authentication (session cookie).
 
 ### Cluster routing headers
 Every API request can be routed to a specific cluster by including these headers:
@@ -695,7 +712,7 @@ Every API request can be routed to a specific cluster by including these headers
 | "No cluster" in header | No cluster registered | Settings → Clusters → Add Cluster |
 | Prometheus data missing | kubectl proxy not running | `kubectl proxy --port=8001 &` |
 | Pod terminal (exec) doesn't work | Using `next dev` instead of `npm run dev` | Always use `npm run dev` — it uses `server.mjs` |
-| Port 3030 already in use | Another process on port 3030 | `lsof -i :3030` to find it, or set `PORT=4030` in `.env.local` |
+| Port 4030 already in use | Another process on port 4030 | `lsof -i :4030` to find it, or set `PORT=<other port>` in `.env.local` |
 | `NEXTAUTH_URL` mismatch | Accessing via different IP/port than configured | Update `NEXTAUTH_URL` to match your actual access URL |
 | Loki "not configured" | Active cluster has empty `lokiUrl` | Edit cluster in Settings → Clusters, set Loki URL |
 | AI Copilot not responding | Groq key missing or invalid | Check `GROQ_API_KEY` in `.env.local` |
@@ -714,8 +731,8 @@ Contributions are welcome.
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR-USERNAME/vynops.git
-cd vynops
+git clone https://github.com/YOUR-USERNAME/vynk8s.git
+cd vynk8s
 npm install
 
 # Create a feature branch
@@ -748,7 +765,7 @@ Then open a Pull Request.
 
 | Product | Purpose | Repo |
 |---|---|---|
-| **VynOps** | Kubernetes operations platform | [vynops/VynOps](https://github.com/vynops/VynOps) |
+| **VynK8s** | Kubernetes operations platform | [vynops/VynK8s](https://github.com/vynops/VynK8s) |
 | **VynAI** | Ollama fleet manager and AI gateway | [vynops/VynAI](https://github.com/vynops/VynAI) |
 | **VynCost** | Cloud cost visibility | [vynops/VynCost](https://github.com/vynops/VynCost) |
 | **VynDB** | Database operations | [vynops/VynDB](https://github.com/vynops/VynDB) |

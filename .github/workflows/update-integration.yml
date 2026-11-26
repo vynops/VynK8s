@@ -1,0 +1,41 @@
+name: Update integration
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/src/lib/update-**'
+      - 'apps/web/src/lib/release-**'
+      - 'apps/web/src/lib/__tests__/*update*'
+      - 'apps/web/src/lib/__tests__/*release*'
+      - 'apps/web/src/app/api/settings/release/**'
+      - 'apps/web/src/app/(dashboard)/settings/page.tsx'
+      - 'apps/web/src/proxy.ts'
+      - 'apps/web/scripts/*update*'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'apps/web/package.json'
+      - '.github/workflows/update-integration.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated PM2
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pm2-test" --no-save --ignore-scripts --no-audit --no-fund pm2@7.1.2
+          echo "$RUNNER_TEMP/pm2-test/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Test actual-app update and rollback
+        run: node apps/web/scripts/test-update-integration.cjs
+        env:
+          VYNK8S_TEST_PM2: ${{ runner.temp }}/pm2-test/node_modules/pm2/bin/pm2

@@ -30,7 +30,7 @@ export async function POST(
         name: jobName,
         namespace,
         annotations: { 'cronjob.kubernetes.io/instantiate': 'manual' },
-        labels: { ...(cron.metadata.labels ?? {}), 'vynops.io/triggered-by': 'ui' },
+        labels: { ...(cron.metadata.labels ?? {}), 'vynk8s.io/triggered-by': 'ui' },
         ownerReferences: [{
           apiVersion: 'batch/v1', kind: 'CronJob', name,
           uid: cron.metadata.uid, blockOwnerDeletion: true, controller: true,

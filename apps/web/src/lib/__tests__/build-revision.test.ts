@@ -11,7 +11,7 @@ let directory: string
 let originalPath: string | undefined
 
 beforeEach(() => {
-  directory = mkdtempSync(join(tmpdir(), 'vynops-version-test-'))
+  directory = mkdtempSync(join(tmpdir(), 'vynk8s-version-test-'))
   originalPath = process.env.PATH
   process.env.PATH = ''
 })
@@ -36,10 +36,10 @@ describe('release version metadata without Git', () => {
     writeFileSync(join(directory, 'release-version.json'), JSON.stringify({ commit, date }))
     const config = await loadConfig('phase-production-build', directory)
     expect(config.env).toMatchObject({
-      VYNOPS_BUILD_COMMIT: commit,
-      VYNOPS_BUILD_COMMIT_DATE: date,
-      VYNOPS_BUILD_DIRTY: '',
-      VYNOPS_BUILD_SOURCE: 'manifest',
+      VYNK8S_BUILD_COMMIT: commit,
+      VYNK8S_BUILD_COMMIT_DATE: date,
+      VYNK8S_BUILD_DIRTY: '',
+      VYNK8S_BUILD_SOURCE: 'manifest',
     })
   })
 

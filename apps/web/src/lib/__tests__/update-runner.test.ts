@@ -18,7 +18,7 @@ let scratch: string
 let root: string
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-runner-test-'))
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-runner-test-'))
   root = join(scratch, 'install')
   mkdirSync(join(root, 'apps', 'web', 'src'), { recursive: true })
   mkdirSync(join(root, 'apps', 'web', 'data'), { recursive: true })
@@ -48,7 +48,7 @@ function fixture() {
     onStatus,
     options: {
       root, backupDir: join(scratch, 'backup'), base, target,
-      releaseBody: 'VYNOPS_DATA_COMPATIBLE: true',
+      releaseBody: 'VYNK8S_DATA_COMPATIBLE: true',
       download: async () => Buffer.from('new'),
       runtime, onStatus,
     },

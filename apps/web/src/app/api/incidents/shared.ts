@@ -39,7 +39,7 @@ const COMPONENT_GROUPS: { key: string; title: string; service: string; match: Re
     key: 'k8s-pods',
     title: 'Kubernetes Workload Issues',
     service: 'cluster-wide',
-    match: /KubePod|CrashLoop|OOMKill|KubeContainer|KubeDeployment|VynOpsWorkload|VynOpsPod/,
+    match: /KubePod|CrashLoop|OOMKill|KubeContainer|KubeDeployment|VynK8sWorkload|VynK8sPod/,
   },
   {
     key: 'k8s-storage',
@@ -208,11 +208,11 @@ function saveStore(store: Map<string, IncidentDoc>): void {
   writeAtomicJson(STORE_FILE, Object.fromEntries(store))
 }
 
-const sharedGlobal = globalThis as typeof globalThis & { vynopsIncidentStore?: Map<string, IncidentDoc> }
-export const manualStore: Map<string, IncidentDoc> = sharedGlobal.vynopsIncidentStore ??= loadStore()
-const lockGlobal = globalThis as typeof globalThis & { vynopsEscalationLocks?: Set<string>; vynopsNotificationLocks?: Set<string> }
-export const escalationLocks = lockGlobal.vynopsEscalationLocks ??= new Set<string>()
-const notificationLocks = lockGlobal.vynopsNotificationLocks ??= new Set<string>()
+const sharedGlobal = globalThis as typeof globalThis & { vynk8sIncidentStore?: Map<string, IncidentDoc> }
+export const manualStore: Map<string, IncidentDoc> = sharedGlobal.vynk8sIncidentStore ??= loadStore()
+const lockGlobal = globalThis as typeof globalThis & { vynk8sEscalationLocks?: Set<string>; vynk8sNotificationLocks?: Set<string> }
+export const escalationLocks = lockGlobal.vynk8sEscalationLocks ??= new Set<string>()
+const notificationLocks = lockGlobal.vynk8sNotificationLocks ??= new Set<string>()
 
 export function persistStore(): void {
   saveStore(manualStore)
@@ -253,7 +253,7 @@ export async function dispatchIncidentNotification(incident: IncidentDoc): Promi
     incident.notificationAttempts = 0
     incident.notificationAbandoned = false
   }
-  const base = (process.env.NEXTAUTH_URL ?? 'http://localhost:3030').replace(/\/$/, '')
+  const base = (process.env.NEXTAUTH_URL ?? 'http://localhost:4030').replace(/\/$/, '')
   const result = await notifyIncident({ ...incident, detail: affectedSummary(incident) || incident.lastAffected, url: `${base}/incidents?id=${encodeURIComponent(incident.id)}` }, event, incident.notificationChannels ?? [])
   if (incident.notificationEvent !== event || incident.updatedAt !== generation) return
   incident.notificationChannels = result.channels

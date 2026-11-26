@@ -6,7 +6,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // VynOps brand — cyan-based
+        // VynK8s brand — cyan-based
         brand: {
           50:  '#ecfeff',
           100: '#cffafe',

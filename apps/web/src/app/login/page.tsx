@@ -57,7 +57,7 @@ function LoginForm() {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white tracking-tight">
-              Vyn<span className="text-brand-400">Ops</span>
+              Vyn<span className="text-brand-400">K8s</span>
             </h1>
             <p className="text-sm text-surface-400 mt-1">
               Autonomous Kubernetes Operations Platform
@@ -89,7 +89,7 @@ function LoginForm() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@VynOps.io"
+                placeholder="you@vynk8s.local"
                 required
                 className="w-full px-3 py-2.5 rounded-lg bg-surface-800 border border-surface-700 text-white placeholder-surface-500 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/60 transition-all"
               />

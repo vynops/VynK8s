@@ -413,7 +413,7 @@ function ClusterCliModal({ cluster, context, onContextChange, onClose }: {
       const data = await response.json()
       if (!response.ok) setRunError(data.error ?? `Command failed (${response.status})`)
       else setRunOutput(data.output ?? '')
-    } catch { setRunError('Could not reach VynOps. Check your connection and try again.') }
+    } catch { setRunError('Could not reach VynK8s. Check your connection and try again.') }
     finally { setRunning(false) }
   }
 
@@ -471,7 +471,7 @@ function ClusterCliModal({ cluster, context, onContextChange, onClose }: {
                 <Copy className="h-3.5 w-3.5" /> {copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy failed' : 'Copy command'}
               </button>
               <button onClick={runCommand} disabled={running || !safeNamespace} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40">
-                <TerminalSquare className="h-3.5 w-3.5" /> {running ? 'Running…' : 'Run in VynOps'}
+                <TerminalSquare className="h-3.5 w-3.5" /> {running ? 'Running…' : 'Run in VynK8s'}
               </button>
             </div>
           </div>
@@ -486,7 +486,7 @@ function ClusterCliModal({ cluster, context, onContextChange, onClose }: {
           )}
 
           <div className="rounded-lg border border-surface-800 bg-surface-950/60 p-3 text-2xs leading-relaxed text-surface-500">
-            <strong className="text-surface-300">Run in VynOps</strong> queries the selected registered cluster using your signed-in session and a fixed read-only command list. <strong className="text-surface-300">Copy command</strong> uses the local context above and runs only when pasted into your terminal. No kubeconfig credentials are uploaded, and arbitrary shell commands are not accepted.
+            <strong className="text-surface-300">Run in VynK8s</strong> queries the selected registered cluster using your signed-in session and a fixed read-only command list. <strong className="text-surface-300">Copy command</strong> uses the local context above and runs only when pasted into your terminal. No kubeconfig credentials are uploaded, and arbitrary shell commands are not accepted.
           </div>
         </div>
       </div>
@@ -599,7 +599,7 @@ function KubernetesInner() {
   const [kubeContexts, setKubeContexts] = useState<Record<string, string>>({})
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem('vynops-kube-contexts') ?? '{}')
+      const saved = JSON.parse(localStorage.getItem('vynk8s-kube-contexts') ?? '{}')
       if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
         setKubeContexts(Object.fromEntries(Object.entries(saved).filter((entry): entry is [string, string] => typeof entry[1] === 'string')))
       }
@@ -609,10 +609,10 @@ function KubernetesInner() {
     const context = value.trim()
     setKubeContexts(current => ({ ...current, [id]: context }))
     try {
-      const saved = JSON.parse(localStorage.getItem('vynops-kube-contexts') ?? '{}')
+      const saved = JSON.parse(localStorage.getItem('vynk8s-kube-contexts') ?? '{}')
       if (context) saved[id] = context
       else delete saved[id]
-      localStorage.setItem('vynops-kube-contexts', JSON.stringify(saved))
+      localStorage.setItem('vynk8s-kube-contexts', JSON.stringify(saved))
     } catch { /* local browser storage is optional */ }
   }, [])
   const [sortCol, setSortCol]           = useState<'name'|'namespace'|'status'|'node'|'restarts'|'cpu'|'mem'|'age'>('status')
@@ -764,7 +764,7 @@ function KubernetesInner() {
 
   const { data: clusterMeta, isLive: clusterMetaLive } = useLiveData(
     '/api/k8s/cluster',
-    { id: activeCluster?.id ?? '—', name: 'k3d-vynops', provider: 'on-prem' as const, region: '—', version: '—', namespaceCount: 0 },
+    { id: activeCluster?.id ?? '—', name: 'k3d-vynk8s', provider: 'on-prem' as const, region: '—', version: '—', namespaceCount: 0 },
     (r) => ({ id: r.id ?? activeCluster?.id ?? '—', name: r.name ?? activeCluster?.name ?? '—', provider: (r.provider ?? 'on-prem') as 'on-prem', region: r.region ?? '—', version: r.version ?? '—', namespaceCount: r.namespaceCount ?? 0 }),
   )
 
@@ -6247,7 +6247,7 @@ function KubernetesInner() {
               <CheckCircle2 className="w-10 h-10 text-success" />
               <p className="text-sm font-semibold text-white">Cluster Registered</p>
               <p className="text-xs text-surface-500 text-center max-w-xs">
-                VynOps will connect to the kubectl proxy and begin collecting metrics within 30 seconds.
+                VynK8s will connect to the kubectl proxy and begin collecting metrics within 30 seconds.
               </p>
               <button onClick={() => setShowConnectModal(false)} className="mt-2 px-5 py-2 text-xs font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-xl">
                 Done
@@ -6256,7 +6256,7 @@ function KubernetesInner() {
           ) : (
             <>
               <p className="text-xs text-surface-500">
-                Run a kubectl proxy on the target cluster, then register the URL here. VynOps will poll it for metrics.
+                Run a kubectl proxy on the target cluster, then register the URL here. VynK8s will poll it for metrics.
               </p>
               <div className="bg-surface-800 rounded-xl px-3 py-2 font-mono text-xs text-success select-all">
                 kubectl proxy --port=8001 --address=0.0.0.0 --accept-hosts=&apos;.*&apos; &amp;

@@ -17,7 +17,7 @@ export async function POST(
     spec: {
       template: {
         metadata: {
-          annotations: { 'vynops.io/restartedAt': new Date().toISOString() },
+          annotations: { 'vynk8s.io/restartedAt': new Date().toISOString() },
         },
       },
     },

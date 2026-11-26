@@ -91,7 +91,7 @@ export async function notifyIncident(incident: NotifyIncidentPayload, event = 'i
     const enabled = (channel: string) => cfg.integrations_enabled?.[channel] !== false && (!routing || routing.includes(channel))
     const configured: string[] = []
     const emoji = SEV_EMOJI[sev] ?? '⚪'
-    const headerText = `${emoji} VynOps — ${sev.toUpperCase()} ${eventLabel(event)}`
+    const headerText = `${emoji} VynK8s — ${sev.toUpperCase()} ${eventLabel(event)}`
     const bodyText   = `*${incident.title}*${incident.detail ? `\n${incident.detail}` : ''}`
 
     // ── Slack ────────────────────────────────────────────────
@@ -111,12 +111,12 @@ export async function notifyIncident(incident: NotifyIncidentPayload, event = 'i
                   { type: 'mrkdwn', text: `*Service*\n${incident.service}` },
                   { type: 'mrkdwn', text: `*State*\n${incident.state}` },
                   { type: 'mrkdwn', text: `*Incident ID*\n${incident.id}` },
-                  { type: 'mrkdwn', text: `*Platform*\nVynOps` },
+                  { type: 'mrkdwn', text: `*Platform*\nVynK8s` },
                   { type: 'mrkdwn', text: `*Time*\n<!date^${Math.floor(Date.now()/1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>` },
                 ],
               },
               ...(incident.url
-                ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: '🔍 View in VynOps' }, url: incident.url, style: 'primary' }] }]
+                ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: '🔍 View in VynK8s' }, url: incident.url, style: 'primary' }] }]
                 : []),
               { type: 'divider' },
             ],
@@ -209,13 +209,13 @@ export async function notifyEscalation(payload: NotifyEscalationPayload): Promis
         blocks: [
           {
             type: 'header',
-            text: { type: 'plain_text', text: `${emoji} VynOps Escalation — ${levelTag.replace(/\*/g, '')}` },
+            text: { type: 'plain_text', text: `${emoji} VynK8s Escalation — ${levelTag.replace(/\*/g, '')}` },
           },
           {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `${mention} VynOps is escalating incident *${payload.incidentTitle}* to you.\n_Incident ID: ${payload.incidentId} · Service: ${payload.service}_`,
+              text: `${mention} VynK8s is escalating incident *${payload.incidentTitle}* to you.\n_Incident ID: ${payload.incidentId} · Service: ${payload.service}_`,
             },
           },
           {
@@ -225,22 +225,22 @@ export async function notifyEscalation(payload: NotifyEscalationPayload): Promis
               { type: 'mrkdwn', text: `*Escalation Level*\nL${payload.nextLevel} — ${payload.levelDesc}` },
               { type: 'mrkdwn', text: `*On-Call Contact*\n${payload.contactName}` },
               { type: 'mrkdwn', text: `*Email*\n${payload.contactEmail}` },
-              { type: 'mrkdwn', text: `*Platform*\nVynOps` },
+              { type: 'mrkdwn', text: `*Platform*\nVynK8s` },
               { type: 'mrkdwn', text: `*Time*\n<!date^${Math.floor(Date.now()/1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>` },
               ...(payload.affected       ? [{ type: 'mrkdwn', text: `*Affected*\n${payload.affected}` }]       : []),
               ...(payload.slaInfo        ? [{ type: 'mrkdwn', text: `*SLA Status*\n${payload.slaInfo}` }]       : []),
-              ...(payload.autoTriggered  ? [{ type: 'mrkdwn', text: `*Triggered by*\nVynOps Auto-escalation` }] : []),
+              ...(payload.autoTriggered  ? [{ type: 'mrkdwn', text: `*Triggered by*\nVynK8s Auto-escalation` }] : []),
             ],
           },
           ...(payload.url
-            ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: 'View in VynOps' }, url: payload.url, style: 'danger' }] }]
+            ? [{ type: 'actions', elements: [{ type: 'button', text: { type: 'plain_text', text: 'View in VynK8s' }, url: payload.url, style: 'danger' }] }]
             : []),
           { type: 'divider' },
         ],
       }, 'slack', attempts)
     const channelsOk: string[] = slackOk ? ['slack'] : []
     if (teamsAvailable && await deliver(teamsUrl, teamsPayload(
-      `VynOps Escalation - L${payload.nextLevel} ${payload.levelDesc}`,
+      `VynK8s Escalation - L${payload.nextLevel} ${payload.levelDesc}`,
       `${payload.contactName} (${payload.contactEmail}) is asked to act on ${payload.incidentTitle}\n${payload.incidentId} | ${payload.service}${payload.affected ? `\nAffected: ${payload.affected}` : ''}${payload.slaInfo ? `\n${payload.slaInfo}` : ''}`,
       payload.url,
     ), 'teams', attempts)) channelsOk.push('teams')

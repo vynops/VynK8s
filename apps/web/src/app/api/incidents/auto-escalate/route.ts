@@ -11,7 +11,7 @@ import { appendAuditLog } from '@/app/api/settings/config/shared'
 import { assertOperator } from '@/lib/rbac'
 
 const ONCALL_FILE = join(process.cwd(), 'data', 'oncall.json')
-const BASE        = (process.env.NEXTAUTH_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+const BASE        = (process.env.NEXTAUTH_URL ?? 'http://localhost:4030').replace(/\/$/, '')
 
 function readSchedules(): OnCallSchedule[] {
   try {

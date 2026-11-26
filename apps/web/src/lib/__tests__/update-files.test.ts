@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { applyUpdate, prepareUpdate, recoverUpdate, rollbackUpdate } from '../update-files.js'
 
-const body = 'VYNOPS_DATA_COMPATIBLE: true'
+const body = 'VYNK8S_DATA_COMPATIBLE: true'
 const app = 'apps/web/src/app.ts'
 const removed = 'apps/web/src/old.ts'
 const added = 'apps/web/src/new.ts'
@@ -46,7 +46,7 @@ function installManifest(files: Record<string, string>) {
 }
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-update-test-'))
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-update-test-'))
   root = join(scratch, 'install')
   mkdirSync(root)
 })

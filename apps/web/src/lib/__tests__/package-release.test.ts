@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildRevision } from '../build-revision.js'
 
-const scratch = mkdtempSync(join(tmpdir(), 'vynops-package-test-'))
+const scratch = mkdtempSync(join(tmpdir(), 'vynk8s-package-test-'))
 const repo = join(scratch, 'repo')
 const unpacked = join(scratch, 'unpacked')
 const archive = join(scratch, 'release.tar.gz')
@@ -29,7 +29,7 @@ describe('release packaging', () => {
 
     const manifestFile = join(scratch, 'manifest.json')
     execFileSync(process.execPath, [script, repo, archive, manifestFile], {
-      stdio: 'pipe', env: { ...process.env, VYNOPS_RELEASE_BODY: '' },
+      stdio: 'pipe', env: { ...process.env, VYNK8S_RELEASE_BODY: '' },
     })
     execFileSync('tar', ['-xf', archive, '-C', unpacked])
 
@@ -48,7 +48,7 @@ describe('release packaging', () => {
     const approvedSource = join(scratch, 'approved')
     mkdirSync(approvedSource)
     execFileSync(process.execPath, [script, repo, approvedArchive, join(scratch, 'approved-manifest.json')], {
-      stdio: 'pipe', env: { ...process.env, VYNOPS_RELEASE_BODY: 'Notes\r\nVYNOPS_DATA_COMPATIBLE: true\r\n' },
+      stdio: 'pipe', env: { ...process.env, VYNK8S_RELEASE_BODY: 'Notes\r\nVYNK8S_DATA_COMPATIBLE: true\r\n' },
     })
     execFileSync('tar', ['-xf', approvedArchive, '-C', approvedSource])
     const approved = JSON.parse(readFileSync(join(approvedSource, 'apps', 'web', 'release-version.json'), 'utf8'))

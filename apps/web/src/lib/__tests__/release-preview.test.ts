@@ -30,7 +30,7 @@ function request(origin = 'https://example.test') {
 }
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-preview-test-'))
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-preview-test-'))
   web = join(scratch, 'apps', 'web')
   mkdirSync(join(web, 'src'), { recursive: true })
   mkdirSync(join(web, 'data'))
@@ -41,10 +41,10 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   vi.stubEnv('AUTH_URL', '')
   vi.stubEnv('NEXTAUTH_URL', '')
-  vi.stubEnv('VYNOPS_BUILD_SOURCE', 'manifest')
-  vi.stubEnv('VYNOPS_BUILD_COMMIT', base.commit)
+  vi.stubEnv('VYNK8S_BUILD_SOURCE', 'manifest')
+  vi.stubEnv('VYNK8S_BUILD_COMMIT', base.commit)
   mocks.guard.mockResolvedValue(null)
-  mocks.load.mockResolvedValue({ manifest: target, body: 'VYNOPS_DATA_COMPATIBLE: true', download: async () => Buffer.from('new') })
+  mocks.load.mockResolvedValue({ manifest: target, body: 'VYNK8S_DATA_COMPATIBLE: true', download: async () => Buffer.from('new') })
 })
 
 afterEach(() => {
@@ -82,7 +82,7 @@ describe('update verification endpoint', () => {
   })
 
   it('rejects metadata that does not match the running build', async () => {
-    vi.stubEnv('VYNOPS_BUILD_COMMIT', 'c'.repeat(40))
+    vi.stubEnv('VYNK8S_BUILD_COMMIT', 'c'.repeat(40))
     expect((await POST(request())).status).toBe(409)
     expect(mocks.load).not.toHaveBeenCalled()
   })

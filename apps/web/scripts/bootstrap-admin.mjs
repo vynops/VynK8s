@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url'
 import bcrypt from 'bcryptjs'
 
 const WEB_DIR = join(dirname(fileURLToPath(import.meta.url)), '..')
-const DATA_DIR = process.env.VYNOPS_BOOTSTRAP_DATA_DIR || join(WEB_DIR, 'data')
-const ENV_FILE = process.env.VYNOPS_BOOTSTRAP_ENV_FILE || join(WEB_DIR, '.env.local')
+const DATA_DIR = process.env.VYNK8S_BOOTSTRAP_DATA_DIR || join(WEB_DIR, 'data')
+const ENV_FILE = process.env.VYNK8S_BOOTSTRAP_ENV_FILE || join(WEB_DIR, '.env.local')
 const BOOTSTRAP_KEYS = /^(?:export\s+)?INITIAL_ADMIN_(?:EMAIL|PASSWORD|NAME)\s*=/
 
 function parseEnvFile(file) {
@@ -56,7 +56,7 @@ export function bootstrapAdmin({ envFile = ENV_FILE, dataDir = DATA_DIR, env = p
   }
 
   const fileEnv = parseEnvFile(envFile)
-  const email = String(env.INITIAL_ADMIN_EMAIL || fileEnv.INITIAL_ADMIN_EMAIL || 'admin@vynops.io').trim().toLowerCase()
+  const email = String(env.INITIAL_ADMIN_EMAIL || fileEnv.INITIAL_ADMIN_EMAIL || 'admin@vynk8s.local').trim().toLowerCase()
   const password = String(env.INITIAL_ADMIN_PASSWORD || fileEnv.INITIAL_ADMIN_PASSWORD || 'changeme')
   const name = String(env.INITIAL_ADMIN_NAME || fileEnv.INITIAL_ADMIN_NAME || 'Platform Administrator').trim()
 

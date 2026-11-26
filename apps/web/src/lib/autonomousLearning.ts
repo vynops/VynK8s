@@ -1,5 +1,5 @@
 ﻿/**
- * VynOps Autonomous Learning Engine
+ * VynK8s Autonomous Learning Engine
  *
  * Reads the action log and outcomes file to compute per-pattern success rates,
  * derive adaptive confidence-threshold multipliers, and build a persistent

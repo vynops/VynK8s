@@ -47,7 +47,7 @@ function createRuntime(options) {
       throw new Error('Update health token is unavailable')
     }
     const response = await fetch(`http://127.0.0.1:${port}/api/settings/release/health`, {
-      headers: { 'X-Vynops-Update-Token': options.healthToken },
+      headers: { 'X-Vynk8s-Update-Token': options.healthToken },
       redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(3000),
     })
     if (!response.ok) return false
@@ -98,7 +98,7 @@ function createRuntime(options) {
     if (!Array.isArray(processes)) throw new Error('Invalid PM2 process list')
     const matches = processes.filter(item => item && item.pm_id === appId)
     const item = matches[0]
-    if (matches.length !== 1 || item.name !== 'vynops' || !matchesInstallation(item)) {
+    if (matches.length !== 1 || item.name !== 'vynk8s' || !matchesInstallation(item)) {
       throw new Error('PM2 application identity does not match the installation')
     }
     return item
@@ -141,7 +141,7 @@ function createRuntime(options) {
     },
     async build() {
       try {
-        invoke(npm, ['run', 'build', '--workspace=@VynOps/web'], 15 * 60 * 1000)
+        invoke(npm, ['run', 'build', '--workspace=@vynk8s/web'], 15 * 60 * 1000)
       } catch (error) {
         if (error.code === 'ETIMEDOUT' || error.signal) {
           const uncertain = new Error('Build termination could not be confirmed; manual recovery is required', { cause: error })

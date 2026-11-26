@@ -1,8 +1,8 @@
 ﻿/**
- * VynOps custom Next.js server
+ * VynK8s custom Next.js server
  * Adds WebSocket proxy for /api/k8s/exec → kubectl proxy → K8s exec API
  *
- * Run from d:\vynops-ai\apps\web:
+ * Run from d:\vynk8s\apps\web:
  *   node server.mjs
  */
 
@@ -38,14 +38,14 @@ process.on('unhandledRejection', (reason) => {
 // Set CRON_SECRET env var to lock it down; otherwise a random secret is
 // generated at startup and lives only for the lifetime of this process.
 if (!process.env.CRON_SECRET) {
-  process.env.CRON_SECRET = 'vynops-cron-' + crypto.randomUUID().replace(/-/g, '')
+  process.env.CRON_SECRET = 'vynk8s-cron-' + crypto.randomUUID().replace(/-/g, '')
 }
 const CRON_SECRET = process.env.CRON_SECRET
 
 const dev = process.argv.includes('--dev') || process.env.NODE_ENV === 'development'
 if (!process.env.NODE_ENV) process.env.NODE_ENV = dev ? 'development' : 'production'
 const hostname = process.env.HOST || '0.0.0.0'
-const port = parseInt(process.env.PORT || '3030', 10)
+const port = parseInt(process.env.PORT || '4030', 10)
 
 // kubectl proxy URL — override with KUBECTL_PROXY_URL env var if needed
 const KUBECTL_PROXY = (process.env.KUBECTL_PROXY_URL || 'http://127.0.0.1:8001')
@@ -117,7 +117,7 @@ app.prepare().then(() => {
   })
 
   server.listen(port, hostname, () => {
-    console.log(`> VynOps ready on http://${hostname}:${port}`)
+    console.log(`> VynK8s ready on http://${hostname}:${port}`)
 
     // ── Server-side autonomous healing loop ───────────────────────────────────
     // Fires every 5 minutes regardless of whether any browser tab is open.

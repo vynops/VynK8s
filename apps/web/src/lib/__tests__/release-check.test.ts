@@ -48,7 +48,7 @@ describe('release checks', () => {
 
   it('recognizes explicit publisher confirmation for code-only releases', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(Response.json({ ...release, body: 'VYNOPS_DATA_COMPATIBLE: true' }))
+      .mockResolvedValueOnce(Response.json({ ...release, body:       'VYNK8S_DATA_COMPATIBLE: true' }))
       .mockResolvedValueOnce(Response.json({ status: 'ahead', files: [{ filename: 'apps/web/src/page.tsx', status: 'modified' }] }))
     vi.stubGlobal('fetch', fetchMock)
     const result = await checkRelease(commit)
@@ -57,9 +57,8 @@ describe('release checks', () => {
 
   it('flags protected client data and unsafe renamed paths for maintenance', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(Response.json({ ...release, body: 'VYNOPS_DATA_COMPATIBLE: true' }))
-      .mockResolvedValueOnce(Response.json({
-        status: 'ahead',
+      .mockResolvedValueOnce(Response.json({ ...release, body:       'VYNK8S_DATA_COMPATIBLE: true' }))
+      .mockResolvedValueOnce(Response.json({        status: 'ahead',
         files: [
           { filename: 'apps/web/data/users.json', status: 'modified' },
           { filename: 'apps/web/src/new.ts', previous_filename: '../outside', status: 'renamed' },

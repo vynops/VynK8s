@@ -7,10 +7,10 @@ export async function GET() {
   if (deny) return deny
 
   const installed = {
-    commit: process.env.VYNOPS_BUILD_COMMIT || null,
-    date: process.env.VYNOPS_BUILD_COMMIT_DATE || null,
-    dirty: process.env.VYNOPS_BUILD_DIRTY === 'true' ? true : process.env.VYNOPS_BUILD_DIRTY === 'false' ? false : null,
-    source: process.env.VYNOPS_BUILD_SOURCE || null,
+    commit: process.env.VYNK8S_BUILD_COMMIT || null,
+    date: process.env.VYNK8S_BUILD_COMMIT_DATE || null,
+    dirty: process.env.VYNK8S_BUILD_DIRTY === 'true' ? true : process.env.VYNK8S_BUILD_DIRTY === 'false' ? false : null,
+    source: process.env.VYNK8S_BUILD_SOURCE || null,
   }
   try {
     return NextResponse.json({ installed, update: await checkRelease(installed.commit) })

@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export function GET(request: Request) {
-  const token = request.headers.get('x-vynops-update-token')
+  const token = request.headers.get('x-vynk8s-update-token')
   if (!token || !/^[a-f0-9]{64}$/.test(token)) return new Response(null, { status: 404 })
   try {
     const state = stateDirectory(process.cwd(), false)
@@ -21,7 +21,7 @@ export function GET(request: Request) {
         !timingSafeEqual(Buffer.from(token, 'hex'), Buffer.from(job.healthToken, 'hex'))) {
       return new Response(null, { status: 404 })
     }
-    return NextResponse.json({ pid: process.pid, commit: process.env.VYNOPS_BUILD_COMMIT }, {
+    return NextResponse.json({ pid: process.pid, commit: process.env.VYNK8S_BUILD_COMMIT }, {
       headers: { 'Cache-Control': 'no-store' },
     })
   } catch (error) {

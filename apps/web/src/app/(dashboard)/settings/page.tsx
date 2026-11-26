@@ -599,7 +599,7 @@ const SMTP_FIELDS = [
   { id: 'smtp_port', label: 'SMTP Port',     placeholder: '587',                      env: 'SMTP_PORT', masked: false },
   { id: 'smtp_user', label: 'SMTP Username', placeholder: 'you@gmail.com',             env: 'SMTP_USER', masked: false },
   { id: 'smtp_pass', label: 'SMTP Password', placeholder: 'app-password',              env: 'SMTP_PASS', masked: true  },
-  { id: 'smtp_from', label: 'From Address',  placeholder: 'VynOps <you@example.com>', env: 'SMTP_FROM', masked: false },
+  { id: 'smtp_from', label: 'From Address',  placeholder: 'VynK8s <you@example.com>', env: 'SMTP_FROM', masked: false },
 ]
 
 const COOLDOWN_OPTIONS = [
@@ -2404,21 +2404,21 @@ function AboutTab() {
           const blob = new Blob([JSON.stringify({ config: d.config, source: d.source, exported_at: new Date().toISOString() }, null, 2)], { type: 'application/json' })
           const url = URL.createObjectURL(blob)
           const a = document.createElement('a')
-          a.href = url; a.download = `vynops-config-${new Date().toISOString().slice(0, 10)}.json`
+          a.href = url; a.download = `vynk8s-config-${new Date().toISOString().slice(0, 10)}.json`
           document.body.appendChild(a); a.click(); document.body.removeChild(a)
           setTimeout(() => URL.revokeObjectURL(url), 100)
         }} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-800 hover:bg-surface-700 border border-surface-700 rounded-xl text-xs text-surface-300 hover:text-white transition-all">
           <ExternalLink className="w-3.5 h-3.5" /> Export Config
         </button>
       </div>
-      {/* VynOps version */}
+      {/* VynK8s version */}
       <div className="rounded-2xl bg-surface-900 border border-surface-800 p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center flex-shrink-0">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">VynOps</p>
+            <p className="text-sm font-bold text-white">VynK8s</p>
             <p className="text-xs text-surface-400">AI-Native Kubernetes Operations Platform</p>
           </div>
         </div>
@@ -2586,7 +2586,7 @@ function ProfileTab() {
   const [form, setForm] = useState({
     name: '', email: '', team: 'Platform Engineering',
     role: 'viewer', timezone: 'Asia/Kolkata',
-    platform_name: 'VynOps', platform_tagline: 'AI Platform',
+    platform_name: 'VynK8s', platform_tagline: 'AI Platform',
   })
   const [saved, setSaved] = useState(false)
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' })
@@ -2683,7 +2683,7 @@ function ProfileTab() {
         </div>
         <p className="text-2xs text-surface-500 -mt-2">Shown in the sidebar logo area.</p>
         {[
-          { label: 'Platform Name',    key: 'platform_name',    placeholder: 'VynOps' },
+          { label: 'Platform Name',    key: 'platform_name',    placeholder: 'VynK8s' },
           { label: 'Platform Tagline', key: 'platform_tagline', placeholder: 'AI Platform' },
         ].map(f => (
           <div key={f.key}>
@@ -2699,7 +2699,7 @@ function ProfileTab() {
             <span className="text-white font-bold text-sm">{(form.platform_name || 'M').charAt(0).toUpperCase()}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-white font-bold text-sm leading-tight">{form.platform_name || 'VynOps'}</span>
+            <span className="text-white font-bold text-sm leading-tight">{form.platform_name || 'VynK8s'}</span>
             <span className="text-brand-500 text-2xs font-medium tracking-widest uppercase">{form.platform_tagline || 'AI Platform'}</span>
           </div>
         </div>

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   }
   const input = releaseIdentitySchema.safeParse(body)
   if (!input.success) return NextResponse.json({ error: 'Invalid release identity.' }, { status: 400 })
-  if (process.env.VYNOPS_BUILD_SOURCE !== 'manifest' || !process.env.VYNOPS_BUILD_COMMIT) {
+  if (process.env.VYNK8S_BUILD_SOURCE !== 'manifest' || !process.env.VYNK8S_BUILD_COMMIT) {
     return NextResponse.json({ error: 'Verified release metadata is required before checking installation.' }, { status: 409 })
   }
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       throw new Error('Installed release metadata is invalid')
     }
     const base = JSON.parse(readFileSync(metadata, 'utf8'))
-    if (base.commit !== process.env.VYNOPS_BUILD_COMMIT) {
+    if (base.commit !== process.env.VYNK8S_BUILD_COMMIT) {
       throw new Error('Installed release metadata does not match the running build')
     }
     const release = await loadLatestRelease(base.commit, input.data.tag, input.data.commit)

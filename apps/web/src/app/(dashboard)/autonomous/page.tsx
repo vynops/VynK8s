@@ -606,7 +606,7 @@ export default function AutonomousPage() {
               <div>
                 <h2 className="text-sm font-semibold text-white">Autonomous Healing</h2>
                 <p className="text-xs text-surface-400 mt-0.5">
-                  When enabled, VynOps automatically remediates high-confidence predictions on a 5-minute cycle.
+                  When enabled, VynK8s automatically remediates high-confidence predictions on a 5-minute cycle.
                 </p>
               </div>
               <button
@@ -720,7 +720,7 @@ export default function AutonomousPage() {
         </h2>
         <ol className="space-y-2 text-xs text-surface-400 list-none">
           {[
-            ['Every 5 min', 'VynOps polls live AI insights (restart trends, OOM kills, CPU throttle, memory pressure)'],
+            ['Every 5 min', 'VynK8s polls live AI insights (restart trends, OOM kills, CPU throttle, memory pressure)'],
             ['Qualify',     `Only predictions with severity critical/high AND confidence ≥ ${cfg?.confidenceThreshold ?? 80}% proceed`],
             ['Cooldown',    'Each workload has a 1-hour cooldown — no repeated healing storms'],
             ['Resolve',     'Pod → ReplicaSet → Deployment owner chain is resolved before patching'],

@@ -14,7 +14,7 @@ export async function POST(
   const { namespace, name } = await params
   try {
     const patch = {
-      spec: { template: { metadata: { annotations: { 'vynops.io/restartedAt': new Date().toISOString() } } } },
+      spec: { template: { metadata: { annotations: { 'vynk8s.io/restartedAt': new Date().toISOString() } } } },
     }
     const r = await fetch(
       `${K8S}/apis/apps/v1/namespaces/${namespace}/statefulsets/${name}`,

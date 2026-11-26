@@ -89,9 +89,9 @@ const testSchedule = {
   id: 'primary', name: 'Platform Engineering', rotationDays: 7,
   rotationStart: '2026-06-01T00:00:00Z',
   members: [
-    { id: 'm1', name: 'Alice Chen',   email: 'alice@vynops.io'   },
-    { id: 'm2', name: 'Bob Patel',    email: 'bob@vynops.io'     },
-    { id: 'm3', name: 'Carol Singh',  email: 'carol@vynops.io'   },
+    { id: 'm1', name: 'Alice Chen',   email: 'alice@vynk8s.local'   },
+    { id: 'm2', name: 'Bob Patel',    email: 'bob@vynk8s.local'     },
+    { id: 'm3', name: 'Carol Singh',  email: 'carol@vynk8s.local'   },
   ],
   escalationLevels: [
     { level: 1, delayMins:  0, description: 'Primary on-call' },

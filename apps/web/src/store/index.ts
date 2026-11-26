@@ -96,7 +96,7 @@ interface DashboardState {
 const defaultUser: User = {
   id: 'u1',
   name: 'Alex Karev',
-  email: 'alex@VynOps.io',
+  email: 'alex@vynk8s.local',
   role: 'admin',
   team: 'Platform Engineering',
 }
@@ -168,7 +168,7 @@ export const useDashboardStore = create<DashboardState>()(
       removeCluster: (id) => set((s) => ({ clusters: s.clusters.filter(c => c.id !== id) })),
       setClusterStatus: (status, checkedAt) => set({ clusterStatus: status, clusterStatusCheckedAt: checkedAt ?? new Date().toISOString() }),
     })),
-    { name: 'VynOps-dashboard' },
+    { name: 'VynK8s-dashboard' },
   ),
 )
 
@@ -186,4 +186,3 @@ export function getClusterHeaders(): Record<string, string> {
     'X-Grafana-Url':      activeCluster.grafanaUrl      || 'none',
   }
 }
-

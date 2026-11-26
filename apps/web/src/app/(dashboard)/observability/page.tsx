@@ -155,20 +155,20 @@ function ObservabilityInner() {
 
   // Event action state — Suppress, Webhook, Auto-Esc, Create Incident
   const [suppressionRules, setSuppressionRules] = useState<{ id: string; reason: string; namespace: string; durationMin: number; expiresAt: number }[]>(() => {
-    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynops-event-suppressions') ?? '[]') : '[]') } catch { return [] }
+    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-event-suppressions') ?? '[]') : '[]') } catch { return [] }
   })
   const [showSuppressionModal, setShowSuppressionModal] = useState(false)
   const [newSupRule, setNewSupRule] = useState({ reason: '', namespace: 'all', durationMin: 60 })
-  const [webhookUrl, setWebhookUrl] = useState<string>(() => typeof window !== 'undefined' ? (localStorage.getItem('vynops-webhook-url') ?? '') : '')
+  const [webhookUrl, setWebhookUrl] = useState<string>(() => typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-webhook-url') ?? '') : '')
   const [showWebhookModal, setShowWebhookModal] = useState(false)
   const [webhookInput, setWebhookInput] = useState('')
   const [autoEscRules, setAutoEscRules] = useState<{ reason: string; minCount: number; severity: 'critical' | 'high' | 'medium' }[]>(() => {
-    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynops-auto-esc') ?? '[]') : '[]') } catch { return [] }
+    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-auto-esc') ?? '[]') : '[]') } catch { return [] }
   })
   const [showAutoEsc, setShowAutoEsc] = useState(false)
   const [newEscRule, setNewEscRule] = useState({ reason: '', minCount: 5, severity: 'high' as 'critical' | 'high' | 'medium' })
   const [evtCreateModal, setEvtCreateModal] = useState<{ reason: string; message: string; namespace: string } | null>(null)
-  const [evtCreateForm, setEvtCreateForm] = useState({ title: '', severity: 'high' as 'critical' | 'high' | 'medium', owner: 'on-call@vynops.io' })
+  const [evtCreateForm, setEvtCreateForm] = useState({ title: '', severity: 'high' as 'critical' | 'high' | 'medium', owner: 'on-call@vynk8s.local' })
   const [evtCreateSuccess, setEvtCreateSuccess] = useState<string | null>(null)
   const logEndRef      = useRef<HTMLDivElement>(null)
   const autoOpenedRef  = useRef(false)
@@ -642,19 +642,19 @@ function ObservabilityInner() {
     const rule = { id: Math.random().toString(36).slice(2), ...newSupRule, expiresAt: Date.now() + newSupRule.durationMin * 60000 }
     const updated = [...suppressionRules, rule]
     setSuppressionRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-event-suppressions', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-event-suppressions', JSON.stringify(updated))
     setNewSupRule({ reason: '', namespace: 'all', durationMin: 60 })
   }, [newSupRule, suppressionRules])
 
   const handleRemoveSuppressionRule = useCallback((id: string) => {
     const updated = suppressionRules.filter(r => r.id !== id)
     setSuppressionRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-event-suppressions', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-event-suppressions', JSON.stringify(updated))
   }, [suppressionRules])
 
   const handleSaveWebhook = useCallback(() => {
     setWebhookUrl(webhookInput)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-webhook-url', webhookInput)
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-webhook-url', webhookInput)
     setShowWebhookModal(false)
   }, [webhookInput])
 
@@ -670,7 +670,7 @@ function ObservabilityInner() {
     if (!newEscRule.reason.trim()) return
     const updated = [...autoEscRules, { ...newEscRule }]
     setAutoEscRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-auto-esc', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-auto-esc', JSON.stringify(updated))
     setNewEscRule({ reason: '', minCount: 5, severity: 'high' })
   }, [newEscRule, autoEscRules])
 
@@ -699,7 +699,7 @@ function ObservabilityInner() {
     setTimeout(() => {
       setEvtCreateModal(null)
       setEvtCreateSuccess(null)
-      setEvtCreateForm({ title: '', severity: 'high', owner: 'on-call@vynops.io' })
+      setEvtCreateForm({ title: '', severity: 'high', owner: 'on-call@vynk8s.local' })
     }, 1800)
   }, [evtCreateModal, evtCreateForm])
 
@@ -2185,7 +2185,7 @@ function ObservabilityInner() {
                 placeholder="https://hooks.slack.com/…"
                 className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-500" />
               {webhookUrl && (
-                <button onClick={() => handleTriggerWebhook({ type: 'Warning', reason: 'Test', message: 'VynOps test event', count: 1, namespace: 'test' })}
+                <button onClick={() => handleTriggerWebhook({ type: 'Warning', reason: 'Test', message: 'VynK8s test event', count: 1, namespace: 'test' })}
                   className="text-2xs text-brand-400 hover:text-brand-300">Send test event</button>
               )}
             </div>

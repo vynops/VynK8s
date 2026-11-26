@@ -20,9 +20,9 @@ type AuthUser = {
 }
 
 const DEMO_USERS: AuthUser[] = [
-  { id: '1', name: 'Alex Karev',   email: 'admin@VynOps.io',    role: 'admin'    as const, team: 'Platform Engineering', avatar: 'AK' },
-  { id: '2', name: 'Sarah Chen',   email: 'operator@VynOps.io', role: 'operator' as const, team: 'SRE',                  avatar: 'SC' },
-  { id: '3', name: 'Mike Johnson', email: 'viewer@VynOps.io',   role: 'viewer'   as const, team: 'Engineering',          avatar: 'MJ' },
+  { id: '1', name: 'Alex Karev',   email: 'admin@vynk8s.local', role: 'admin'    as const, team: 'Platform Engineering', avatar: 'AK' },
+  { id: '2', name: 'Sarah Chen',   email: 'operator@vynk8s.local', role: 'operator' as const, team: 'SRE',                  avatar: 'SC' },
+  { id: '3', name: 'Mike Johnson', email: 'viewer@vynk8s.local', role: 'viewer'   as const, team: 'Engineering',          avatar: 'MJ' },
 ]
 
 const DEMO_USERS_ENABLED = process.env.NODE_ENV !== 'production' && process.env.DEMO_USERS_ENABLED === 'true'
@@ -84,7 +84,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'you@VynOps.io' },
+        email: { label: 'Email', type: 'email', placeholder: 'you@vynk8s.local' },
         password: { label: 'Password', type: 'password' },
       },
       authorize: async (credentials) => {

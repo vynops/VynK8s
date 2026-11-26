@@ -13,10 +13,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {},
   env: {
-    VYNOPS_BUILD_COMMIT: revision.commit,
-    VYNOPS_BUILD_COMMIT_DATE: revision.date,
-    VYNOPS_BUILD_DIRTY: revision.dirty,
-    VYNOPS_BUILD_SOURCE: revision.source,
+    VYNK8S_BUILD_COMMIT: revision.commit,
+        VYNK8S_BUILD_COMMIT_DATE: revision.date,
+        VYNK8S_BUILD_DIRTY: revision.dirty,
+        VYNK8S_BUILD_SOURCE: revision.source,
   },
   ...(allowedDevOrigins.length > 0 && { allowedDevOrigins }),
   experimental: {

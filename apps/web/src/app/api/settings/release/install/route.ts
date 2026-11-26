@@ -8,11 +8,11 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function enabled() {
-  return process.env.VYNOPS_UPDATES_ENABLED === 'true' &&
-    (process.platform !== 'win32' || process.env.VYNOPS_UPDATES_WINDOWS_ACL_CONFIRMED === 'true') &&
+  return process.env.VYNK8S_UPDATES_ENABLED === 'true' &&
+    (process.platform !== 'win32' || process.env.VYNK8S_UPDATES_WINDOWS_ACL_CONFIRMED === 'true') &&
     process.env.NODE_ENV === 'production' &&
-    process.env.VYNOPS_BUILD_SOURCE === 'manifest' &&
-    /^[a-f0-9]{40}$/i.test(process.env.VYNOPS_BUILD_COMMIT || '') &&
+    process.env.VYNK8S_BUILD_SOURCE === 'manifest' &&
+    /^[a-f0-9]{40}$/i.test(process.env.VYNK8S_BUILD_COMMIT || '') &&
     /^\d+$/.test(process.env.pm_id || '')
 }
 
@@ -43,14 +43,14 @@ export async function POST(request: Request) {
   const user = await getSessionUserId()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const appId = Number(process.env.pm_id)
-  const port = Number(process.env.PORT || '3030')
+  const port = Number(process.env.PORT || '4030')
   if (!Number.isSafeInteger(appId) || !Number.isSafeInteger(port) || port < 1 || port > 65535) {
     return NextResponse.json({ error: 'Invalid application process configuration.' }, { status: 503 })
   }
   try {
     appendAuditLog({ ts: new Date().toISOString(), user, action: 'update-approved', detail: input.data.tag })
     const status = startJob(process.cwd(), {
-      ...input.data, baseCommit: process.env.VYNOPS_BUILD_COMMIT, appId, pid: process.pid, port,
+      ...input.data, baseCommit: process.env.VYNK8S_BUILD_COMMIT, appId, pid: process.pid, port,
     })
     return NextResponse.json({ status }, { status: 202, headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {

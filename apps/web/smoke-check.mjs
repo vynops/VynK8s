@@ -1,13 +1,13 @@
 /**
- * VynOps Smoke Check — Pre-push API health script
+ * VynK8s Smoke Check — Pre-push API health script
  * Usage: node smoke-check.mjs [base_url]
- * Default base_url: http://localhost:3000
+ * Default base_url: http://localhost:4030
  *
  * Tests every major API endpoint. Exits 0 on full pass, 1 on any failure.
  */
 
-const BASE = process.argv[2] ?? 'http://localhost:3000'
-const ADMIN_EMAIL = 'admin@VynOps.io'
+const BASE = process.argv[2] ?? 'http://localhost:4030'
+const ADMIN_EMAIL = 'admin@vynk8s.local'
 const ADMIN_PASS  = 'admin123'
 
 const RESET  = '\x1b[0m'
@@ -179,7 +179,7 @@ async function login() {
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 console.log()
-console.log(`${BOLD}${CYAN}  VynOps Smoke Check${RESET}  ${DIM}${BASE}${RESET}`)
+console.log(`${BOLD}${CYAN}  VynK8s Smoke Check${RESET}  ${DIM}${BASE}${RESET}`)
 console.log(`  ${DIM}${'─'.repeat(68)}${RESET}`)
 console.log()
 

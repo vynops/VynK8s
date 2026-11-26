@@ -1,9 +1,9 @@
 const { createHash } = require('node:crypto')
 const { maintenanceReasons } = require('./update-policy.js')
 
-const API = 'https://api.github.com/repos/vynops/VynOps'
-const RELEASES = 'https://github.com/vynops/VynOps/releases/download'
-const RAW = 'https://raw.githubusercontent.com/vynops/VynOps'
+const API = 'https://api.github.com/repos/vynops/VynK8s'
+const RELEASES = 'https://github.com/vynops/VynK8s/releases/download'
+const RAW = 'https://raw.githubusercontent.com/vynops/VynK8s'
 const MAX_MANIFEST = 5 * 1024 * 1024
 const MAX_FILE = 10 * 1024 * 1024
 const RELEASE_HOSTS = new Set(['github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'])
@@ -70,9 +70,9 @@ async function loadLatestRelease(baseCommit, expectedTag, expectedCommit) {
   const release = await getJson(`${API}/releases/latest`)
   if (!release || release.draft !== false || release.prerelease !== false ||
       release.tag_name !== expectedTag || typeof release.body !== 'string' ||
-      !/^VYNOPS_DATA_COMPATIBLE: true\r?$/m.test(release.body) || !Array.isArray(release.assets) ||
-      !release.assets.some(asset => asset && asset.name === 'vynops-manifest.json') ||
-      !release.assets.some(asset => asset && asset.name === 'vynops-sha256.txt')) {
+      !/^VYNK8S_DATA_COMPATIBLE: true\r?$/m.test(release.body) || !Array.isArray(release.assets) ||
+      !release.assets.some(asset => asset && asset.name === 'vynk8s-manifest.json') ||
+      !release.assets.some(asset => asset && asset.name === 'vynk8s-sha256.txt')) {
     throw new Error('The approved release is unavailable or requires maintenance')
   }
   const comparison = await getJson(`${API}/compare/${baseCommit}...${encodeURIComponent(expectedTag)}?per_page=100`)
@@ -87,10 +87,10 @@ async function loadLatestRelease(baseCommit, expectedTag, expectedCommit) {
     throw new Error('The approved release requires separate maintenance')
   }
   const assetBase = `${RELEASES}/${encodeURIComponent(expectedTag)}`
-  const checksums = (await getBytes(`${assetBase}/vynops-sha256.txt`, 4096, RELEASE_HOSTS)).toString('utf8')
-  const lines = checksums.split(/\r?\n/).filter(line => /^[a-f0-9]{64}  vynops-manifest\.json$/i.test(line))
+  const checksums = (await getBytes(`${assetBase}/vynk8s-sha256.txt`, 4096, RELEASE_HOSTS)).toString('utf8')
+  const lines = checksums.split(/\r?\n/).filter(line => /^[a-f0-9]{64}  vynk8s-manifest\.json$/i.test(line))
   if (lines.length !== 1) throw new Error('Release manifest checksum is unavailable')
-  const bytes = await getBytes(`${assetBase}/vynops-manifest.json`, MAX_MANIFEST, RELEASE_HOSTS)
+  const bytes = await getBytes(`${assetBase}/vynk8s-manifest.json`, MAX_MANIFEST, RELEASE_HOSTS)
   const checksum = createHash('sha256').update(bytes).digest('hex')
   if (checksum !== lines[0].slice(0, 64).toLowerCase()) throw new Error('Release manifest checksum does not match')
   let manifest

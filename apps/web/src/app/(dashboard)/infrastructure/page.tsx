@@ -430,7 +430,7 @@ function InfrastructureInner() {
   const [expandedDiskNodes, setExpandedDiskNodes] = useState<Set<string>>(new Set())
   const [pvFilter, setPvFilter] = useState<string>('all')
   const [createModal, setCreateModal] = useState<{ eventId: string; reason: string; namespace: string; message: string } | null>(null)
-  const [createForm, setCreateForm] = useState({ title: '', severity: 'high' as 'critical' | 'high' | 'medium', owner: 'on-call@vynops.io' })
+  const [createForm, setCreateForm] = useState({ title: '', severity: 'high' as 'critical' | 'high' | 'medium', owner: 'on-call@vynk8s.local' })
   const [createSuccess, setCreateSuccess] = useState<string | null>(null)
   const [yamlTarget, setYamlTarget] = useState<{ kind: string; namespace: string; name: string } | null>(null)
   const [describeTarget, setDescribeTarget] = useState<{ kind: string; namespace: string; name: string } | null>(null)
@@ -450,7 +450,7 @@ function InfrastructureInner() {
 
   // ── Network L5 ────────────────────────────────────────────────────────────
   const [netThresholds, setNetThresholds] = useState<{ bwSatPct: number; packetDropPct: number }>(() => {
-    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynops-net-thresholds') ?? 'null') : 'null') ?? { bwSatPct: 70, packetDropPct: 0.5 } } catch { return { bwSatPct: 70, packetDropPct: 0.5 } }
+    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-net-thresholds') ?? 'null') : 'null') ?? { bwSatPct: 70, packetDropPct: 0.5 } } catch { return { bwSatPct: 70, packetDropPct: 0.5 } }
   })
   const [showNetThresholds, setShowNetThresholds] = useState(false)
   const [netThresholdDraft, setNetThresholdDraft] = useState(netThresholds)
@@ -497,15 +497,15 @@ function InfrastructureInner() {
 
   // ── Events L5 ─────────────────────────────────────────────────────────────
   const [suppressionRules, setSuppressionRules] = useState<{ id: string; reason: string; namespace: string; durationMin: number; expiresAt: number }[]>(() => {
-    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynops-event-suppressions') ?? '[]') : '[]') } catch { return [] }
+    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-event-suppressions') ?? '[]') : '[]') } catch { return [] }
   })
   const [showSuppressionModal, setShowSuppressionModal] = useState(false)
   const [newSupRule, setNewSupRule] = useState({ reason: '', namespace: 'all', durationMin: 60 })
-  const [webhookUrl, setWebhookUrl] = useState<string>(() => typeof window !== 'undefined' ? (localStorage.getItem('vynops-webhook-url') ?? '') : '')
+  const [webhookUrl, setWebhookUrl] = useState<string>(() => typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-webhook-url') ?? '') : '')
   const [showWebhookModal, setShowWebhookModal] = useState(false)
   const [webhookInput, setWebhookInput] = useState('')
   const [autoEscRules, setAutoEscRules] = useState<{ reason: string; minCount: number; severity: 'critical' | 'high' | 'medium' }[]>(() => {
-    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynops-auto-esc') ?? '[]') : '[]') } catch { return [] }
+    try { return JSON.parse(typeof window !== 'undefined' ? (localStorage.getItem('vynk8s-auto-esc') ?? '[]') : '[]') } catch { return [] }
   })
   const [showAutoEsc, setShowAutoEsc] = useState(false)
   const [newEscRule, setNewEscRule] = useState({ reason: '', minCount: 5, severity: 'high' as 'critical' | 'high' | 'medium' })
@@ -543,7 +543,7 @@ function InfrastructureInner() {
     setDeletingPVC(null)
     setConfirmDeletePVC(null)
     // Refresh storage data
-    window.dispatchEvent(new Event('vynops:refresh-storage'))
+    window.dispatchEvent(new Event('vynk8s:refresh-storage'))
   }, [confirmDeletePVC, clusterHeaders])
 
   const handleResizePVC = useCallback(async () => {
@@ -557,7 +557,7 @@ function InfrastructureInner() {
     ).catch(() => null)
     setResizingPVC(false)
     setResizePVC(null)
-    window.dispatchEvent(new Event('vynops:refresh-storage'))
+    window.dispatchEvent(new Event('vynk8s:refresh-storage'))
   }, [resizePVC, resizeSizeInput, clusterHeaders])
 
   // \u2500\u2500 L5 node callbacks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -608,7 +608,7 @@ function InfrastructureInner() {
     }).catch(() => null)
     setCreatingSC(false)
     setCreateSCModal(false)
-    window.dispatchEvent(new Event('vynops:refresh-storage'))
+    window.dispatchEvent(new Event('vynk8s:refresh-storage'))
   }, [scForm, clusterHeaders])
 
   const handleCreateSnapshot = useCallback(async () => {
@@ -654,25 +654,25 @@ function InfrastructureInner() {
     const rule = { id: Math.random().toString(36).slice(2), ...newSupRule, expiresAt: Date.now() + newSupRule.durationMin * 60000 }
     const updated = [...suppressionRules, rule]
     setSuppressionRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-event-suppressions', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-event-suppressions', JSON.stringify(updated))
     setNewSupRule({ reason: '', namespace: 'all', durationMin: 60 })
   }, [newSupRule, suppressionRules])
 
   const handleRemoveSuppressionRule = useCallback((id: string) => {
     const updated = suppressionRules.filter(r => r.id !== id)
     setSuppressionRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-event-suppressions', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-event-suppressions', JSON.stringify(updated))
   }, [suppressionRules])
 
   const handleSaveWebhook = useCallback(() => {
     setWebhookUrl(webhookInput)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-webhook-url', webhookInput)
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-webhook-url', webhookInput)
     setShowWebhookModal(false)
   }, [webhookInput])
 
   const handleSaveNetThresholds = useCallback(() => {
     setNetThresholds(netThresholdDraft)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-net-thresholds', JSON.stringify(netThresholdDraft))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-net-thresholds', JSON.stringify(netThresholdDraft))
     setShowNetThresholds(false)
   }, [netThresholdDraft])
 
@@ -680,7 +680,7 @@ function InfrastructureInner() {
     if (!newEscRule.reason.trim()) return
     const updated = [...autoEscRules, { ...newEscRule }]
     setAutoEscRules(updated)
-    if (typeof window !== 'undefined') localStorage.setItem('vynops-auto-esc', JSON.stringify(updated))
+    if (typeof window !== 'undefined') localStorage.setItem('vynk8s-auto-esc', JSON.stringify(updated))
     setNewEscRule({ reason: '', minCount: 5, severity: 'high' })
   }, [newEscRule, autoEscRules])
 
@@ -699,8 +699,8 @@ function InfrastructureInner() {
   )
   useEffect(() => {
     const refresh = () => refreshStorage()
-    window.addEventListener('vynops:refresh-storage', refresh)
-    return () => window.removeEventListener('vynops:refresh-storage', refresh)
+    window.addEventListener('vynk8s:refresh-storage', refresh)
+        return () => window.removeEventListener('vynk8s:refresh-storage', refresh)
   }, [refreshStorage])
   const pvs: PersistentVolume[] = storageData.pvs
   const storageclasses: StorageClass[] = storageData.storageclasses
@@ -826,7 +826,7 @@ function InfrastructureInner() {
     setTimeout(() => {
       setCreateModal(null)
       setCreateSuccess(null)
-      setCreateForm({ title: '', severity: 'high', owner: 'on-call@vynops.io' })
+      setCreateForm({ title: '', severity: 'high', owner: 'on-call@vynk8s.local' })
     }, 1800)
   }, [createModal, createForm])
 
@@ -2212,7 +2212,7 @@ function InfrastructureInner() {
                                       <ExternalLink className="w-3 h-3" />
                                     </a>
                                     <a href={`/observability?tab=Logs`}
-                                      onClick={() => { if (typeof window !== 'undefined') { sessionStorage.setItem('vynops-loki-jump', JSON.stringify({ query: `{namespace="${nsName}"} |= "${podName.split('-').slice(0, -2).join('-') || podName}"`, start: bwDrill.ts - 15 * 60, end: bwDrill.ts + 15 * 60 })) } }}
+                                      onClick={() => { if (typeof window !== 'undefined') { sessionStorage.setItem('vynk8s-loki-jump', JSON.stringify({ query: `{namespace="${nsName}"} |= "${podName.split('-').slice(0, -2).join('-') || podName}"`, start: bwDrill.ts - 15 * 60, end: bwDrill.ts + 15 * 60 })) } }}
                                       className="w-5 h-5 flex items-center justify-center rounded hover:bg-surface-700 text-surface-500 hover:text-amber-400 transition-colors" title="View logs around this spike">
                                       <ScrollText className="w-3 h-3" />
                                     </a>
@@ -3250,7 +3250,7 @@ function InfrastructureInner() {
                 placeholder="https://hooks.slack.com/…"
                 className="w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-500" />
               {webhookUrl && (
-                <button onClick={() => handleTriggerWebhook({ type: 'Warning', reason: 'Test', message: 'VynOps test event', count: 1, namespace: 'test' } as any)}
+                <button onClick={() => handleTriggerWebhook({ type: 'Warning', reason: 'Test', message: 'VynK8s test event', count: 1, namespace: 'test' } as any)}
                   className="text-2xs text-brand-400 hover:text-brand-300">Send test event</button>
               )}
             </div>
@@ -3437,7 +3437,7 @@ function InfrastructureInner() {
                                 <a href={`/observability?tab=Logs`}
                                   onClick={() => {
                                     if (typeof window !== 'undefined') {
-                                      sessionStorage.setItem('vynops-loki-jump', JSON.stringify({
+                                      sessionStorage.setItem('vynk8s-loki-jump', JSON.stringify({
                                         query: `{namespace="${nsName}"} |= "${podName.split('-').slice(0, -2).join('-') || podName}"`,
                                         start: netNodePopup.drill!.ts - 15 * 60,
                                         end: netNodePopup.drill!.ts + 15 * 60,
@@ -3561,7 +3561,7 @@ function InfrastructureInner() {
                                   onClick={() => {
                                     // Pre-fill Loki query via localStorage signal (simple cross-page comms)
                                     if (typeof window !== 'undefined') {
-                                      sessionStorage.setItem('vynops-loki-jump', JSON.stringify({
+                                      sessionStorage.setItem('vynk8s-loki-jump', JSON.stringify({
                                         query: `{namespace="${nsName}"} |= "${podName.split('-').slice(0,-2).join('-') || podName}"`,
                                         start: nodePopup.drill!.ts - 15*60,
                                         end: nodePopup.drill!.ts + 15*60,
@@ -3685,7 +3685,7 @@ function InfrastructureInner() {
                     onClick={() => {
                       if (typeof window !== 'undefined') {
                         const now = Math.floor(Date.now() / 1000)
-                        sessionStorage.setItem('vynops-loki-jump', JSON.stringify({
+                        sessionStorage.setItem('vynk8s-loki-jump', JSON.stringify({
                           query: `{namespace="${ioPopup.namespace}"} |= "${ioPopup.pod.split('-').slice(0, -2).join('-') || ioPopup.pod}"`,
                           start: now - ioPopup.ioWin * 60,
                           end: now,
@@ -3781,7 +3781,7 @@ function InfrastructureInner() {
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const tsS = Math.floor(ioDrill.ts / 1000)
-                            sessionStorage.setItem('vynops-loki-jump', JSON.stringify({
+                            sessionStorage.setItem('vynk8s-loki-jump', JSON.stringify({
                               query: `{namespace="${ioPopup.namespace}"} |= "${ioPopup.pod.split('-').slice(0, -2).join('-') || ioPopup.pod}"`,
                               start: tsS - 15 * 60,
                               end:   tsS + 15 * 60,

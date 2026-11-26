@@ -251,7 +251,7 @@ export default function GitOpsPage() {
             <div>
               <p className="text-sm font-medium text-white">No GitOps controller detected</p>
               <p className="text-xs text-surface-400 mt-1">
-                VynOps looks for Argo CD Application CRDs and Flux Kustomization/HelmRelease CRDs in the cluster.
+                VynK8s looks for Argo CD Application CRDs and Flux Kustomization/HelmRelease CRDs in the cluster.
                 Install one of the following to enable GitOps tracking:
               </p>
             </div>

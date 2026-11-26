@@ -396,7 +396,7 @@ export default function AIHistoryPage() {
               <History className="w-7 h-7 text-brand-400" />
             </div>
             <p className="text-sm font-semibold text-white mb-1">No conversations yet</p>
-            <p className="text-xs text-surface-500 mb-4">Start chatting with VynOps AI to build your history.</p>
+            <p className="text-xs text-surface-500 mb-4">Start chatting with VynK8s AI to build your history.</p>
             <Link href="/dashboard/ai-copilot"
               className="flex items-center gap-2 px-4 py-2 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 rounded-xl text-sm text-brand-400 font-medium transition-all">
               <Bot className="w-4 h-4" /> Start a conversation

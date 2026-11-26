@@ -3,13 +3,13 @@
  *
  * Alertmanager webhook receiver.
  * Receives Alertmanager v4 webhook payloads and forwards them to Slack as
- * rich Block Kit messages with a "View in VynOps" action button.
+ * rich Block Kit messages with a "View in VynK8s" action button.
  *
  * Add to Alertmanager config:
  *   receivers:
- *   - name: "vynops-slack"
+ *   - name: "vynk8s-slack"
  *     webhook_configs:
- *     - url: "https://ops.vynops.online/api/alerts/webhook"
+ *     - url: "https://k8s.vynops.online/api/alerts/webhook"
  *       send_resolved: true
  *       http_config:
  *         tls_config:
@@ -21,7 +21,7 @@ import { teamsPayload } from '@/lib/notify'
 import fs from 'fs'
 import path from 'path'
 
-const VYNOPS_URL = (process.env.NEXTAUTH_URL ?? 'https://ops.vynops.online').replace(/\/$/, '')
+const VYNK8S_URL = (process.env.NEXTAUTH_URL ?? 'https://k8s.vynops.online').replace(/\/$/, '')
 
 /**
  * Returns the first external Prometheus URL from clusters.json, or null.
@@ -168,13 +168,13 @@ function buildSlackBlocks(payload: AmPayload): object[] {
     })
   }
 
-  // ── Actions: View in VynOps button (+ Prometheus link if available) ─────
+  // ── Actions: View in VynK8s button (+ Prometheus link if available) ─────
   const alertQuery = encodeURIComponent(alertName)
   const actionElements: object[] = [
     {
       type:  'button',
-      text:  { type: 'plain_text', text: '🔍 View in VynOps', emoji: true },
-      url:   `${VYNOPS_URL}/alerts?name=${alertQuery}`,
+      text:  { type: 'plain_text', text: '🔍 View in VynK8s', emoji: true },
+      url:   `${VYNK8S_URL}/alerts?name=${alertQuery}`,
       style: 'primary',
     },
   ]
@@ -234,7 +234,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       const shown  = (firing.length > 0 ? firing : payload.alerts).slice(0, 5)
       const detail = shown.map(a => `${a.labels.alertname ?? alertName}: ${a.annotations.summary ?? a.annotations.description ?? ''}`).join('\n')
       const title  = isFiring ? `[${sev.toUpperCase()}] ${alertName}` : `[RESOLVED] ${alertName}`
-      targets.push({ channel: 'teams', url: teamsUrl, body: teamsPayload(title, detail, `${VYNOPS_URL}/alerts?name=${encodeURIComponent(alertName)}`) })
+      targets.push({ channel: 'teams', url: teamsUrl, body: teamsPayload(title, detail, `${VYNK8S_URL}/alerts?name=${encodeURIComponent(alertName)}`) })
     }
     if (targets.length === 0) {
       return NextResponse.json({ ok: false, error: 'No alert channel configured' }, { status: 503 })

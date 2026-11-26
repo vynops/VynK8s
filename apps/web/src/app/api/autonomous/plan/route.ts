@@ -348,7 +348,7 @@ export async function POST(req: Request) {
   // Tell a human about plans waiting for approval: once when pending, and once more as a reminder.
   const REMIND_AFTER_MS = 60 * 60_000
   const openById = new Map(open.map(i => [i.id, i]))
-  const appBase  = (process.env.NEXTAUTH_URL ?? 'http://localhost:3030').replace(/\/$/, '')
+  const appBase  = (process.env.NEXTAUTH_URL ?? 'http://localhost:4030').replace(/\/$/, '')
   let planNotices = 0
   for (const p of readPlans()) {
     if (p.status !== 'pending') continue

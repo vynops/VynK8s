@@ -8,13 +8,13 @@ import { join } from 'path'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const workerGlobal = globalThis as typeof globalThis & { vynopsIncidentCycle?: Promise<Response>; vynopsWorkerAudit?: { signature: string; at: number }; vynopsBlind?: { since: number | null; notified: boolean } }
+const workerGlobal = globalThis as typeof globalThis & { vynk8sIncidentCycle?: Promise<Response>; vynk8sWorkerAudit?: { signature: string; at: number }; vynk8sBlind?: { since: number | null; notified: boolean } }
 
 // Without Prometheus nothing new is detected and nothing recovers, so tell people instead of staying quiet.
 const BLIND_AFTER_MS = 5 * 60_000
 async function trackMonitoringHealth(hasPrometheus: boolean) {
-  const state = (workerGlobal.vynopsBlind ??= { since: null, notified: false })
-  const url = `${(process.env.NEXTAUTH_URL ?? 'http://localhost:3030').replace(/\/$/, '')}/incidents`
+  const state = (workerGlobal.vynk8sBlind ??= { since: null, notified: false })
+  const url = `${(process.env.NEXTAUTH_URL ?? 'http://localhost:4030').replace(/\/$/, '')}/incidents`
   if (hasPrometheus) {
     const wasNotified = state.notified
     state.since = null
@@ -29,7 +29,7 @@ async function trackMonitoringHealth(hasPrometheus: boolean) {
   if (!state.notified && Date.now() - state.since >= BLIND_AFTER_MS) {
     state.notified = true
     appendAuditLog({ ts: new Date().toISOString(), user: 'system', action: 'monitoring.unavailable', detail: 'Prometheus unreachable for 5+ minutes' })
-    await notifyIncident({ id: 'MONITORING', title: 'Monitoring unavailable: VynOps cannot reach Prometheus, so new alerts and recoveries are not being detected', severity: 'critical', service: 'prometheus', state: 'unavailable', url }, 'monitoring.unavailable')
+    await notifyIncident({ id: 'MONITORING', title: 'Monitoring unavailable: VynK8s cannot reach Prometheus, so new alerts and recoveries are not being detected', severity: 'critical', service: 'prometheus', state: 'unavailable', url }, 'monitoring.unavailable')
   }
 }
 
@@ -37,12 +37,12 @@ export async function POST(req: Request) {
   if (!process.env.CRON_SECRET || req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  if (workerGlobal.vynopsIncidentCycle) return NextResponse.json({ ok: true, skipped: true, reason: 'Cycle already running' })
-  workerGlobal.vynopsIncidentCycle = runCycle(req)
+  if (workerGlobal.vynk8sIncidentCycle) return NextResponse.json({ ok: true, skipped: true, reason: 'Cycle already running' })
+  workerGlobal.vynk8sIncidentCycle = runCycle(req)
   try {
-    return await workerGlobal.vynopsIncidentCycle
+    return await workerGlobal.vynk8sIncidentCycle
   } finally {
-    workerGlobal.vynopsIncidentCycle = undefined
+    workerGlobal.vynk8sIncidentCycle = undefined
   }
 }
 
@@ -66,9 +66,9 @@ async function runCycle(req: Request) {
     writeAtomicJson(file, heartbeat)
     // One audit line per state change, plus an hourly proof of life, instead of one per minute.
     const signature = `${detected.hasPrometheus}|${pending}|${abandoned}|${heartbeat.ok}`
-    const last = workerGlobal.vynopsWorkerAudit
+    const last = workerGlobal.vynk8sWorkerAudit
     if (!last || last.signature !== signature || Date.now() - last.at > 60 * 60_000) {
-      workerGlobal.vynopsWorkerAudit = { signature, at: Date.now() }
+      workerGlobal.vynk8sWorkerAudit = { signature, at: Date.now() }
       appendAuditLog({ ts: heartbeat.completedAt, user: 'system', action: 'incident.worker.completed', detail: `source=${detected.hasPrometheus ? 'healthy' : 'unavailable'} pending=${pending} abandoned=${abandoned}` })
     }
     return NextResponse.json(heartbeat)

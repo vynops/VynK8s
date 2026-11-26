@@ -8,7 +8,7 @@ let scratch: string
 let web: string
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-pm2-test-'))
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-pm2-test-'))
   web = join(scratch, 'apps', 'web')
   mkdirSync(join(web, '.next'), { recursive: true })
   writeFileSync(join(web, 'server.mjs'), 'server')
@@ -24,7 +24,7 @@ function fixture(initialPid = 100) {
   const invoke = vi.fn((cli: string, args: string[]) => {
     if (cli === 'pm2' && args[0] === 'jlist') {
       return JSON.stringify([{
-        pm_id: 0, name: 'vynops', pid,
+        pm_id: 0, name: 'vynk8s', pid,
         pm2_env: { status: state, exec_mode: 'fork_mode', pm_cwd: web, pm_exec_path: join(web, 'server.mjs') },
       }])
     }
@@ -38,7 +38,7 @@ function fixture(initialPid = 100) {
     throw new Error('Unexpected command')
   })
   const runtime = createRuntime({
-    root: scratch, webDir: web, appId: 0, initialPid, port: 3030,
+    root: scratch, webDir: web, appId: 0, initialPid, port: 4030,
     pm2Cli: 'pm2', npmCli: 'npm', invoke,
     pause: async () => {}, probe: async () => true,
   })
@@ -62,7 +62,7 @@ function npmLaunchFixture(options: { args?: string[]; startScript?: string } = {
   const invoke = vi.fn((cli: string, cliArgs: string[]) => {
     if (cli === pm2Path && cliArgs[0] === 'jlist') {
       return JSON.stringify([{
-        pm_id: 0, name: 'vynops', pid,
+        pm_id: 0, name: 'vynk8s', pid,
         pm2_env: { status: state, exec_mode: 'fork_mode', pm_cwd: web, pm_exec_path: npmPath, args },
       }])
     }
@@ -71,7 +71,7 @@ function npmLaunchFixture(options: { args?: string[]; startScript?: string } = {
     throw new Error('Unexpected command')
   })
   const runtime = createRuntime({
-    root: scratch, webDir: web, appId: 0, initialPid: 100, port: 3030,
+    root: scratch, webDir: web, appId: 0, initialPid: 100, port: 4030,
     pm2Cli: pm2Path, npmCli: npmPath, invoke,
     pause: async () => {}, probe: async () => true,
   })
@@ -93,7 +93,7 @@ describe('PM2 update adapter', () => {
     await runtime.restoreBuild(backup)
     expect(readFileSync(join(web, '.next', 'build.txt'), 'utf8')).toBe('old build')
     expect(readFileSync(join(backup, 'failed-build', 'build.txt'), 'utf8')).toBe('new build')
-    expect(invoke).toHaveBeenCalledWith('npm', ['run', 'build', '--workspace=@VynOps/web'], 15 * 60 * 1000)
+    expect(invoke).toHaveBeenCalledWith('npm', ['run', 'build', '--workspace=@vynk8s/web'], 15 * 60 * 1000)
   })
 
   it('does not stop a different or restarted application', async () => {

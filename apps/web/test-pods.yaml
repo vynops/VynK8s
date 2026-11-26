@@ -1,5 +1,5 @@
 ﻿# ─────────────────────────────────────────────────────────────────────────────
-# VynOps Pods-tab feature demo — apply once, then refresh the dashboard
+# VynK8s Pods-tab feature demo — apply once, then refresh the dashboard
 #   kubectl apply -f test-pods.yaml
 #   kubectl delete -f test-pods.yaml   (cleanup)
 # ─────────────────────────────────────────────────────────────────────────────

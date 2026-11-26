@@ -53,7 +53,7 @@ const body = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `${mention} *[TEST MESSAGE]* — This is a test escalation from VynOps.\n_INC-TEST-001 · kubernetes_`,
+        text: `${mention} *[TEST MESSAGE]* — This is a test escalation from VynK8s.\n_INC-TEST-001 · kubernetes_`,
       },
     },
     {

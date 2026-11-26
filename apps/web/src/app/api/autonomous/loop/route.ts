@@ -442,7 +442,7 @@ async function runLoop(req: Request) {
         actionCooldown.set(cooldownKey, Date.now())
         entry.result = 'ok'
         await slackNotify(
-          `?? *VynOps Auto-Heal*\n` +
+          `?? *VynK8s Auto-Heal*\n` +
           `? Action: \`${action}\`\n` +
           `? Target: \`${namespace}/${deployName}\`\n` +
           `? Confidence: ${confidence}% (threshold: ${effectiveThresh}%)\n` +
@@ -514,7 +514,7 @@ async function runLoop(req: Request) {
           entry.result = 'ok'
           dailyCount++
           await slackNotify(
-            `\uD83E\uDDF9 *VynOps Auto-Heal*\n` +
+            `\uD83E\uDDF9 *VynK8s Auto-Heal*\n` +
             `\u2022 Action: \`${STUCK_TERMINATING_ACTION}\`\n` +
             `\u2022 Target: \`${namespace}/${podName}\`\n` +
             `\u2022 Reason: stuck Terminating ${stuckMins}+ min past grace period`,

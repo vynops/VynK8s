@@ -9,7 +9,7 @@ if (!repository || !output || !manifestOutput) throw new Error('Usage: node pack
 
 const root = realpathSync(repository)
 const target = resolve(output)
-const staging = mkdtempSync(join(tmpdir(), 'vynops-release-'))
+const staging = mkdtempSync(join(tmpdir(), 'vynk8s-release-'))
 
 function hashFiles(source, directory = source, files = Object.create(null)) {
   for (const name of readdirSync(directory)) {
@@ -33,7 +33,7 @@ try {
   const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
   const commit = git('rev-parse', '--verify', 'HEAD')
   const date = git('show', '-s', '--format=%cI', commit)
-  const dataCompatible = /^VYNOPS_DATA_COMPATIBLE: true\r?$/m.test(process.env.VYNOPS_RELEASE_BODY || '')
+  const dataCompatible = /^VYNK8S_DATA_COMPATIBLE: true\r?$/m.test(process.env.VYNK8S_RELEASE_BODY || '')
   const archive = join(staging, 'source.tar')
   const source = join(staging, 'source')
   mkdirSync(source)

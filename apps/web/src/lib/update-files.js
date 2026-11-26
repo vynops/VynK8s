@@ -189,7 +189,7 @@ function ensureParents(root, name, created) {
 }
 
 function writeAtomic(destination, content, mode, owner) {
-  const temporary = `${destination}.vynops-${randomUUID()}.tmp`
+  const temporary = `${destination}.vynk8s-${randomUUID()}.tmp`
   let created = false
   let moved = false
   try {
@@ -354,7 +354,7 @@ function recoverUpdate(root, backupDir) {
     if (!change.before && !change.after) throw new Error('Invalid update recovery journal')
   }
   const protectedChanges = journal.changes.filter(change => change.name !== VERSION_FILE).map(change => ({ filename: change.name }))
-  if (maintenanceReasons('VYNOPS_DATA_COMPATIBLE: true', protectedChanges).length) {
+  if (maintenanceReasons('VYNK8S_DATA_COMPATIBLE: true', protectedChanges).length) {
     throw new Error('Update recovery includes protected or unsupported paths')
   }
   const applied = []

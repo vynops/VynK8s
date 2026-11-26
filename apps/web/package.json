@@ -1,13 +1,13 @@
 {
-  "name": "@VynOps/web",
+  "name": "@vynk8s/web",
   "version": "1.6.26",
   "private": true,
   "scripts": {
-    "predev": "node scripts/setup-env.mjs",
+    "predev": "node scripts/setup-env.mjs && node scripts/ensure-first-admin.mjs",
     "dev": "node --max-old-space-size=1536 server.mjs --dev",
     "dev:next": "next dev --turbopack",
     "build": "next build",
-    "prestart": "node scripts/setup-env.mjs",
+    "prestart": "node scripts/setup-env.mjs && node scripts/ensure-first-admin.mjs",
     "start": "node server.mjs",
     "lint": "next lint",
     "type-check": "tsc --noEmit",

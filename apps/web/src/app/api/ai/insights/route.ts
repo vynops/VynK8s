@@ -63,8 +63,8 @@ async function pdNotify(summary: string, severity: 'critical' | 'error' | 'warni
       body: JSON.stringify({
         routing_key:  PD_KEY,
         event_action: 'trigger',
-        dedup_key:    `vynops-${Date.now()}`,
-        payload: { summary, severity, source: 'VynOps Insights' },
+        dedup_key:    `vynk8s-${Date.now()}`,
+        payload: { summary, severity, source: 'VynK8s Insights' },
       }),
       signal: AbortSignal.timeout(K8S_TIMEOUT_MS),
     })
@@ -322,7 +322,7 @@ export async function GET() {
   })
 
   const cluster = {
-    name:         'k3d-vynops',
+    name:         'k3d-vynk8s',
     nodes:        nodes.length,
     notReady:     nodes.length - readyNodes.length,
     pods:         pods.length,
@@ -380,7 +380,7 @@ export async function GET() {
       if (!depRef) continue
 
       const depData = await k8s(`/apis/apps/v1/namespaces/${podNs}/deployments/${depRef.name}`)
-      const lastHeal = depData?.metadata?.annotations?.['vynops.ai/last-auto-heal']
+      const lastHeal = depData?.metadata?.annotations?.['vynk8s.ai/last-auto-heal']
       if (lastHeal && Date.now() - new Date(lastHeal).getTime() < 30 * 60 * 1000) continue // 30-min cooldown
 
       const healKey = `${podNs}/${depRef.name}`
@@ -392,7 +392,7 @@ export async function GET() {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/strategic-merge-patch+json' },
           body: JSON.stringify({
-            metadata: { annotations: { 'vynops.ai/last-auto-heal': new Date().toISOString() } },
+            metadata: { annotations: { 'vynk8s.ai/last-auto-heal': new Date().toISOString() } },
             spec: { template: { metadata: { annotations: { 'kubectl.kubernetes.io/restartedAt': new Date().toISOString() } } } },
           }),
           signal: AbortSignal.timeout(K8S_TIMEOUT_MS),
@@ -429,7 +429,7 @@ export async function GET() {
       if (channels.includes('pagerduty') && chanOn('pagerduty')) { await pdNotify(pdSummary, severity);  fired.push('pagerduty') }
       if (channels.includes('teams') && chanOn('teams') && teamsUrl.startsWith('https://')) {
         const detail = [pdSummary, ...(fields ?? []).map(f => `${f.title}: ${f.value}`)].join('\n')
-        const r = await fetch(teamsUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(teamsPayload(`VynOps - ${eventKey.replace(/_/g, ' ')} (${severity})`, detail)), signal: AbortSignal.timeout(K8S_TIMEOUT_MS) })
+        const r = await fetch(teamsUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(teamsPayload(`VynK8s - ${eventKey.replace(/_/g, ' ')} (${severity})`, detail)), signal: AbortSignal.timeout(K8S_TIMEOUT_MS) })
         if (r.ok) fired.push('teams'); else ok = false
       }
       appendNotifLog({ ts: new Date().toISOString(), event: eventKey, channels: fired, summary: pdSummary, ok })
@@ -441,8 +441,8 @@ export async function GET() {
   for (const key of healExhausted) {
     if (!shouldFire(`heal_exhausted:${key}`, 6 * 3600_000)) continue
     await fire('auto_heal_exhausted', 'critical',
-      `*VynOps - auto-restart limit reached for ${key}*`,
-      `VynOps restarted ${key} ${HEAL_MAX_PER_24H} times in 24h without recovery. Manual investigation needed.`,
+      `*VynK8s - auto-restart limit reached for ${key}*`,
+      `VynK8s restarted ${key} ${HEAL_MAX_PER_24H} times in 24h without recovery. Manual investigation needed.`,
       [{ title: 'Workload', value: key }],
     )
   }
@@ -450,8 +450,8 @@ export async function GET() {
   // Auto-heal ? always fires, no cooldown suppression
   if (autoHealed.length > 0) {
     await fire('auto_heal', 'warning',
-      `?? *VynOps Auto-Healed ${autoHealed.length} deployment(s)*`,
-      `VynOps auto-healed ${autoHealed.length} deployment(s): ${autoHealed.map(h => h.deployment).join(', ')}`,
+      `?? *VynK8s Auto-Healed ${autoHealed.length} deployment(s)*`,
+      `VynK8s auto-healed ${autoHealed.length} deployment(s): ${autoHealed.map(h => h.deployment).join(', ')}`,
       autoHealed.map(h => ({ title: `${h.namespace}/${h.deployment}`, value: h.reason })),
     )
   }
@@ -459,8 +459,8 @@ export async function GET() {
   if (on.critical_incidents !== false && cluster.healthScore < 60 && realCritical.length > 0 && !openCriticalIncident
       && shouldFire('critical_incidents', cooldownMs)) {
     await fire('critical_incidents', 'critical',
-      `?? *VynOps ? Critical Incidents ? Health ${cluster.healthScore}/100*`,
-      `VynOps: health ${cluster.healthScore}/100 ? ${realCritical.length} critical: ${realCritical.slice(0, 2).map((a: any) => a.labels?.alertname ?? '?').join(', ')}`,
+      `?? *VynK8s ? Critical Incidents ? Health ${cluster.healthScore}/100*`,
+      `VynK8s: health ${cluster.healthScore}/100 ? ${realCritical.length} critical: ${realCritical.slice(0, 2).map((a: any) => a.labels?.alertname ?? '?').join(', ')}`,
       realCritical.slice(0, 3).map((a: any) => ({ title: a.labels?.alertname ?? 'Alert', value: a.annotations?.summary ?? 'firing' })),
     )
   }
@@ -468,8 +468,8 @@ export async function GET() {
   if (on.deployment_failures !== false && degradedDeps.length > 0
       && shouldFire('deployment_failures', cooldownMs)) {
     await fire('deployment_failures', 'error',
-      `?? *VynOps ? ${degradedDeps.length} Deployment(s) Degraded*`,
-      `VynOps: ${degradedDeps.length} degraded: ${degradedDeps.slice(0, 3).map((d: any) => `${d.metadata.namespace}/${d.metadata.name}`).join(', ')}`,
+      `?? *VynK8s ? ${degradedDeps.length} Deployment(s) Degraded*`,
+      `VynK8s: ${degradedDeps.length} degraded: ${degradedDeps.slice(0, 3).map((d: any) => `${d.metadata.namespace}/${d.metadata.name}`).join(', ')}`,
       degradedDeps.slice(0, 3).map((d: any) => ({ title: `${d.metadata.namespace}/${d.metadata.name}`, value: `${d.status?.readyReplicas ?? 0}/${d.spec?.replicas ?? 1} ready` })),
     )
   }
@@ -478,8 +478,8 @@ export async function GET() {
   if (on.node_not_ready !== false && notReadyNodes.length > 0
       && shouldFire('node_not_ready', cooldownMs)) {
     await fire('node_not_ready', 'critical',
-      `?? *VynOps ? ${notReadyNodes.length} Node(s) Not Ready*`,
-      `VynOps: ${notReadyNodes.length} node(s) not ready: ${notReadyNodes.map((n: any) => n.metadata.name).join(', ')}`,
+      `?? *VynK8s ? ${notReadyNodes.length} Node(s) Not Ready*`,
+      `VynK8s: ${notReadyNodes.length} node(s) not ready: ${notReadyNodes.map((n: any) => n.metadata.name).join(', ')}`,
       notReadyNodes.slice(0, 3).map((n: any) => ({ title: n.metadata.name, value: n.status?.conditions?.find((c: any) => c.type === 'Ready')?.message ?? 'Not Ready' })),
     )
   }
@@ -488,8 +488,8 @@ export async function GET() {
   if (on.high_restart_rate !== false && highRestarts.length > 0
       && shouldFire(`high_restart_rate:${highRestarts[0]?.metric.pod ?? '?'}`, cooldownMs)) {
     await fire('high_restart_rate', 'warning',
-      `*VynOps WARNING - High Restart Rate on ${highRestarts.length} container(s)*`,
-      `VynOps warning: high restarts - ${highRestarts.slice(0, 2).map(r => `${r.metric.pod ?? r.metric.container}: ${r.value.toFixed(0)}/6h`).join(', ')}`,
+      `*VynK8s WARNING - High Restart Rate on ${highRestarts.length} container(s)*`,
+      `VynK8s warning: high restarts - ${highRestarts.slice(0, 2).map(r => `${r.metric.pod ?? r.metric.container}: ${r.value.toFixed(0)}/6h`).join(', ')}`,
       highRestarts.slice(0, 3).map(r => ({ title: r.metric.pod ?? r.metric.container ?? 'unknown', value: `${r.value.toFixed(0)} restarts in 6h` })),
     )
   }
@@ -497,8 +497,8 @@ export async function GET() {
   if (on.storage_full !== false && diskVal > 80
       && shouldFire('storage_full', cooldownMs)) {
     await fire('storage_full', diskVal > 90 ? 'critical' : 'warning',
-      `?? *VynOps ? Disk Usage Critical: ${diskVal.toFixed(1)}%*`,
-      `VynOps: disk at ${diskVal.toFixed(1)}% on / ? storage full risk`,
+      `?? *VynK8s ? Disk Usage Critical: ${diskVal.toFixed(1)}%*`,
+      `VynK8s: disk at ${diskVal.toFixed(1)}% on / ? storage full risk`,
       [{ title: 'Mount: /', value: `${diskVal.toFixed(1)}% used` }],
     )
   }
@@ -506,8 +506,8 @@ export async function GET() {
   if (on.sla_breaches !== false && cluster.healthScore >= 60 && cluster.healthScore < 70 && counts.critical > 0 && !openCriticalIncident
       && shouldFire('sla_breaches', cooldownMs)) {
     await fire('sla_breaches', 'warning',
-      `?? *VynOps ? SLA at Risk ? Health ${cluster.healthScore}/100*`,
-      `VynOps: SLA breach risk ? health ${cluster.healthScore}/100 with ${counts.critical} critical insight(s)`,
+      `?? *VynK8s ? SLA at Risk ? Health ${cluster.healthScore}/100*`,
+      `VynK8s: SLA breach risk ? health ${cluster.healthScore}/100 with ${counts.critical} critical insight(s)`,
       [{ title: 'Health Score', value: `${cluster.healthScore}/100` }, { title: 'Critical Insights', value: `${counts.critical}` }],
     )
   }

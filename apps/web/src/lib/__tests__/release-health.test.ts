@@ -9,12 +9,12 @@ const token = 'a'.repeat(64)
 const commit = 'b'.repeat(40)
 
 beforeEach(() => {
-  scratch = mkdtempSync(join(tmpdir(), 'vynops-health-test-'))
-  const active = join(scratch, 'data', '.vynops-updater', 'active')
+  scratch = mkdtempSync(join(tmpdir(), 'vynk8s-health-test-'))
+  const active = join(scratch, 'data', '.vynk8s-updater', 'active')
   mkdirSync(active, { recursive: true, mode: 0o700 })
   writeFileSync(join(active, 'job.json'), JSON.stringify({ healthToken: token }))
   vi.spyOn(process, 'cwd').mockReturnValue(scratch)
-  vi.stubEnv('VYNOPS_BUILD_COMMIT', commit)
+  vi.stubEnv('VYNK8S_BUILD_COMMIT', commit)
 })
 afterEach(() => {
   vi.restoreAllMocks()
@@ -24,7 +24,7 @@ afterEach(() => {
 
 describe('update health identity', () => {
   it('only returns the running process identity to the update worker', async () => {
-    const request = (value: string) => new Request('http://localhost/api/settings/release/health', { headers: { 'x-vynops-update-token': value } })
+    const request = (value: string) => new Request('http://localhost/api/settings/release/health', { headers: { 'x-vynk8s-update-token': value } })
     expect(GET(request('c'.repeat(64))).status).toBe(404)
     const response = GET(request(token))
     expect(response.status).toBe(200)

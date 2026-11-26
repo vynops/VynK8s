@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           blocks: [
-            { type: 'section', text: { type: 'mrkdwn', text: '*✅ VynOps — Slack connection verified*' } },
+            { type: 'section', text: { type: 'mrkdwn', text: '*✅ VynK8s — Slack connection verified*' } },
             { type: 'section', fields: [
               { type: 'mrkdwn', text: '*Status*\nConnected' },
               { type: 'mrkdwn', text: '*Source*\nSettings page test' },
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(teamsPayload('VynOps - Microsoft Teams connection verified', 'Status: Connected\nSource: VynOps Settings page test')),
+        body: JSON.stringify(teamsPayload('VynK8s - Microsoft Teams connection verified', 'Status: Connected\nSource: VynK8s Settings page test')),
         signal: AbortSignal.timeout(K8S_TIMEOUT_MS),
       })
       const latencyMs = Date.now() - t0
@@ -252,7 +252,7 @@ export async function POST(req: Request) {
     if (routingKey.length !== 32) {
       return NextResponse.json({ ok: false, error: `Routing key should be 32 chars (got ${routingKey.length})` })
     }
-    const dedupKey = `vynops-test-${Date.now()}`
+    const dedupKey = `vynk8s-test-${Date.now()}`
     try {
       const t0 = Date.now()
       // Trigger a test info event
@@ -264,9 +264,9 @@ export async function POST(req: Request) {
           event_action: 'trigger',
           dedup_key:    dedupKey,
           payload: {
-            summary:  'VynOps — settings connection test (auto-resolved)',
+            summary:  'VynK8s — settings connection test (auto-resolved)',
             severity: 'info',
-            source:   'VynOps Settings',
+            source:   'VynK8s Settings',
           },
         }),
         signal: AbortSignal.timeout(K8S_TIMEOUT_MS),
@@ -303,13 +303,13 @@ export async function POST(req: Request) {
       const t0 = Date.now()
       const r = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-VynOps-Event': 'test' },
+        headers: { 'Content-Type': 'application/json', 'X-VynK8s-Event': 'test' },
         body: JSON.stringify({
-          event:     'vynops.test',
-          source:    'VynOps Settings',
+          event:     'vynk8s.test',
+          source:    'VynK8s Settings',
           timestamp: new Date().toISOString(),
           payload: {
-            message:  'This is a test notification from VynOps',
+            message:  'This is a test notification from VynK8s',
             severity: 'info',
           },
         }),

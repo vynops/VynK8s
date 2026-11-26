@@ -479,7 +479,7 @@ export default function AutomationPage() {
   // ── Load custom runbooks from localStorage on mount ──────────────────────
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('vynops_custom_runbooks')
+      const saved = localStorage.getItem('vynk8s_custom_runbooks')
       if (saved) {
         const custom: RunbookDef[] = JSON.parse(saved)
         const toAdd = custom.filter(c => !RUNBOOKS_DEFAULTS.some(d => d.id === c.id))
@@ -491,7 +491,7 @@ export default function AutomationPage() {
   // ── Persist custom runbooks to localStorage when runbooks change ──────────
   useEffect(() => {
     const custom = runbooks.filter(r => !RUNBOOKS_DEFAULTS.some(d => d.id === r.id))
-    try { localStorage.setItem('vynops_custom_runbooks', JSON.stringify(custom)) } catch {}
+    try { localStorage.setItem('vynk8s_custom_runbooks', JSON.stringify(custom)) } catch {}
   }, [runbooks])
 
   // ── Load run history from API on mount + polling ─────────────────────────

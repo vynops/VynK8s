@@ -69,7 +69,7 @@ export default function LeftNav() {
   const incidents = useDashboardStore(s => s.incidents)
   const alerts = useDashboardStore(s => s.alerts)
 
-  const [appName,    setAppName]    = useState('VynOps')
+  const [appName,    setAppName]    = useState('VynK8s')
   const [appTagline, setAppTagline] = useState('AI Platform')
   const appInitial = appName.charAt(0).toUpperCase() || 'A'
   const userName = session?.user?.name?.trim() || 'User'
@@ -85,7 +85,7 @@ export default function LeftNav() {
     const onStorage = () => {
       try {
         const p = JSON.parse(localStorage.getItem('user_profile') ?? '{}')
-        setAppName(p.platform_name    || 'VynOps')
+        setAppName(p.platform_name    || 'VynK8s')
         setAppTagline(p.platform_tagline || 'AI Platform')
       } catch {}
     }

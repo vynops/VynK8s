@@ -1,6 +1,6 @@
 // Server-to-server calls (autonomous loop, plan auto-approve) authenticate with CRON_SECRET, which server.mjs guarantees at boot.
 
-export const INTERNAL_BASE = `http://127.0.0.1:${process.env.PORT || 3030}`
+export const INTERNAL_BASE = `http://127.0.0.1:${process.env.PORT || 4030}`
 
 // Routes the proxy lets through when the caller presents CRON_SECRET; each route still enforces its own checks.
 const INTERNAL_PATHS = [

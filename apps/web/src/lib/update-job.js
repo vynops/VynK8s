@@ -10,7 +10,7 @@ function stateDirectory(web, create) {
     if (!create && error.code === 'ENOENT') return null
     throw error
   }
-  const state = path.join(data, '.vynops-updater')
+  const state = path.join(data, '.vynk8s-updater')
   if (create) {
     try { fs.mkdirSync(state, { mode: 0o700 }) } catch (error) {
       if (error.code !== 'EEXIST') throw error
@@ -85,7 +85,7 @@ function startJob(web, job, invoke) {
     cwd: web, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000,
   }))
   try {
-    run(pm2, ['start', worker, '--name', `vynops-update-${id}`, '--cwd', web, '--no-autorestart', '--', id])
+    run(pm2, ['start', worker, '--name', `vynk8s-update-${id}`, '--cwd', web, '--no-autorestart', '--', id])
   } catch (error) {
     throw new Error('Update worker launch could not be confirmed; manual review is required', { cause: error })
   }

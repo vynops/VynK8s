@@ -55,7 +55,7 @@ readBack.auto_escalate_enabled === true ? pass('auto_escalate_enabled = true')  
 section('2. Auto-escalate endpoint → disabled → skipped')
 writeJson(CFG_FILE, { ...testCfg, auto_escalate_enabled: false })
 
-const BASE = 'http://localhost:3000'
+const BASE = 'http://localhost:4030'
 // We can't call /api/incidents/auto-escalate via HTTP without a session.
 // Instead, test the config-gating logic directly by reading what the endpoint would see.
 const cfgOff = readJson(CFG_FILE)

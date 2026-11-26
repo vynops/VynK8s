@@ -7,12 +7,20 @@ import { useState, useEffect } from 'react'
 // One-time migration: copy localStorage keys from old brand names to new ones.
 // Safe to remove after 2027 once all users have loaded the app at least once.
 const LS_MIGRATIONS: [string, string][] = [
-  ['aegisops-net-thresholds',    'vynops-net-thresholds'],
-  ['aegisops-event-suppressions','vynops-event-suppressions'],
-  ['aegisops-webhook-url',       'vynops-webhook-url'],
-  ['aegisops-auto-esc',          'vynops-auto-esc'],
-  ['mavops_conversations_v2',    'vynops_conversations_v2'],
-  ['mavops_custom_runbooks',     'vynops_custom_runbooks'],
+  ['aegisops-net-thresholds',    'vynk8s-net-thresholds'],
+  ['aegisops-event-suppressions','vynk8s-event-suppressions'],
+  ['aegisops-webhook-url',       'vynk8s-webhook-url'],
+  ['aegisops-auto-esc',          'vynk8s-auto-esc'],
+  ['mavops_conversations_v2',    'vynk8s_conversations_v2'],
+  ['mavops_custom_runbooks',     'vynk8s_custom_runbooks'],
+  // VynOps -> VynK8s rename (keeps existing browsers' saved settings)
+  ['vynops-net-thresholds',      'vynk8s-net-thresholds'],
+  ['vynops-event-suppressions',  'vynk8s-event-suppressions'],
+  ['vynops-webhook-url',         'vynk8s-webhook-url'],
+  ['vynops-auto-esc',            'vynk8s-auto-esc'],
+  ['vynops_conversations_v2',    'vynk8s_conversations_v2'],
+  ['vynops_custom_runbooks',     'vynk8s_custom_runbooks'],
+  ['vynops-kube-contexts',       'vynk8s-kube-contexts'],
 ]
 
 function migrateLocalStorage() {
